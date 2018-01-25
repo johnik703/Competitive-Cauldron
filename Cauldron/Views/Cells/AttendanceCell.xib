@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16E195" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="AttendanceCell" rowHeight="60" id="xwK-sg-nBK" customClass="AttandanceCell">
+            <rect key="frame" x="0.0" y="0.0" width="450" height="55"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="xwK-sg-nBK" id="UzV-87-oBc">
+                <rect key="frame" x="0.0" y="0.0" width="450" height="55"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="avatar" translatesAutoresizingMaskIntoConstraints="NO" id="7OK-BJ-809">
+                        <rect key="frame" x="8" y="3" width="50" height="50"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="50" id="Gn4-SJ-aLd"/>
+                            <constraint firstAttribute="width" constant="50" id="PfG-nM-HcM"/>
+                        </constraints>
+                    </imageView>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kBt-Zl-u3u" customClass="BEMCheckBox">
+                        <rect key="frame" x="412" y="15" width="25" height="25"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="6s9-fT-gUj"/>
+                            <constraint firstAttribute="width" constant="25" id="PZs-GS-gRo"/>
+                        </constraints>
+                    </view>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dXu-3M-Ofn">
+                        <rect key="frame" x="68" y="17" width="42" height="21"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" red="0.1333333333" green="0.1333333333" blue="0.1333333333" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="kBt-Zl-u3u" firstAttribute="centerY" secondItem="UzV-87-oBc" secondAttribute="centerY" id="BY0-Dp-CaY"/>
+                    <constraint firstItem="7OK-BJ-809" firstAttribute="leading" secondItem="UzV-87-oBc" secondAttribute="leadingMargin" id="FyS-Vc-EwF"/>
+                    <constraint firstItem="dXu-3M-Ofn" firstAttribute="leading" secondItem="7OK-BJ-809" secondAttribute="trailing" constant="10" id="I2x-b1-lWJ"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="kBt-Zl-u3u" secondAttribute="trailing" constant="5" id="ROp-xS-w47"/>
+                    <constraint firstItem="dXu-3M-Ofn" firstAttribute="centerY" secondItem="UzV-87-oBc" secondAttribute="centerY" id="g9u-QQ-tmL"/>
+                    <constraint firstItem="7OK-BJ-809" firstAttribute="centerY" secondItem="UzV-87-oBc" secondAttribute="centerY" id="jV1-td-ak2"/>
+                </constraints>
+            </tableViewCellContentView>
+            <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+            <connections>
+                <outlet property="checkBox" destination="kBt-Zl-u3u" id="Yzc-Pn-CJs"/>
+                <outlet property="lblName" destination="dXu-3M-Ofn" id="QCr-nK-vT2"/>
+                <outlet property="photoImgView" destination="7OK-BJ-809" id="1NM-oW-hGC"/>
+            </connections>
+            <point key="canvasLocation" x="-52" y="-113"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="avatar" width="75" height="75"/>
+    </resources>
+</document>

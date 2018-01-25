@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F92C8F73-CD4A-4F24-8DDA-6FAD38C179B7</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Cauldron</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>665E76C18F77CCEEA0541649B45FF54DF94DBAE4</key>
+		<string>https://bitbucket.org/ccappteam/ccapp.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Cauldron.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>665E76C18F77CCEEA0541649B45FF54DF94DBAE4</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://bitbucket.org/ccappteam/ccapp.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>665E76C18F77CCEEA0541649B45FF54DF94DBAE4</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>665E76C18F77CCEEA0541649B45FF54DF94DBAE4</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Cauldron</string>
+		</dict>
+	</array>
+</dict>
+</plist>

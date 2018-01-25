@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" restorationIdentifier="ChallengeHeader" id="iN0-l3-epB" customClass="ChallengeHeader">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VmO-Ms-bGX">
+                    <rect key="frame" x="-0.5" y="0.0" width="375" height="50"/>
+                    <color key="backgroundColor" red="0.32549019610000002" green="0.63921568630000003" blue="0.094117647060000004" alpha="1" colorSpace="calibratedRGB"/>
+                </view>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VDw-AZ-b4v">
+                    <rect key="frame" x="169.5" y="16.5" width="37.5" height="18"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <variation key="heightClass=regular-widthClass=regular">
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    </variation>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="VmO-Ms-bGX" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="FNA-QD-zeT"/>
+                <constraint firstItem="VmO-Ms-bGX" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="GXt-71-foi"/>
+                <constraint firstItem="VmO-Ms-bGX" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="NL7-u4-zwW"/>
+                <constraint firstItem="VmO-Ms-bGX" firstAttribute="height" secondItem="iN0-l3-epB" secondAttribute="height" id="e2O-hX-AiM"/>
+                <constraint firstItem="VDw-AZ-b4v" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="qZD-RB-hBj"/>
+                <constraint firstItem="VDw-AZ-b4v" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="uFN-8l-77Y"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="titleLbl" destination="VDw-AZ-b4v" id="oCu-hu-TIk"/>
+            </connections>
+        </view>
+    </objects>
+</document>

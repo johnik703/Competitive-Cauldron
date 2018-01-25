@@ -1,0 +1,6 @@
+framework module Pods_CauldronTests {
+  umbrella header "Pods-CauldronTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,111 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#ifdef __OBJC__
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <Availability.h>
+#endif
+
+#ifndef DEBUG
+#define NSLog(...);
+#endif
+
+
+#ifndef Cauldron
+#define Cauldron
+
+/* Verndors */
+#import <IQKeyboardManager/IQKeyboardManager.h>
+#import <SkyFloatingLabelTextField/SkyFloatingLabelTextField-Swift.h>
+#import <IQDropDownTextField/IQDropDownTextField.h>
+#import <BEMCheckBox/BEMCheckBox.h>
+#import <SHMultipleSelect/SHMultipleSelect.h>
+#import <AFNetworking/AFNetworking.h>
+#import "MBProgressHUD.h"
+#import "ProgressHudHelper.h"
+#import <MZFormSheetPresentationController/MZFormSheetPresentationViewController.h>
+#import <MGSwipeTableCell/MGSwipeTableCell.h>
+
+
+/* Categories */
+#import "NSData+Base64.h"
+#import "NSString+emailValidation.h"
+#import "NSString+passwordValidation.h"
+#import "NSString+base64.h"
+#import "UIBarButtonItem+Utils.h"
+#import "UIViewController+Utils.h"
+#import "NSDate+String.h"
+#import "NSDateFormatter+Utils.h"
+#import "UIView+Utils.h"
+#import "UIView+Toast.h"
+#import "UIFont+CustomFont.h"
+#import "NSString+HTML.h"
+#import "NString+date.h"
+#import "UIViewController+Utils.h"
+
+/* Models */
+#import "SCSQLite.h"
+#import "Attandance.h"
+#import "AttandanceReport.h"
+#import "StatusVC.h"
+#import "ReportVC.h"
+#import "RosterVC.h"
+#import "LoginUser.h"
+#import "Journal.h"
+#import "Player.h"
+#import "Ranking.h"
+#import "Signup.h"
+#import "Team.h"
+#import "Sport.h"
+#import "Enums.h"
+#import "ChallengeState.h"
+#import "Challenge.h"
+#import "GlobalVariable.h"
+
+
+/* Helpers */
+#import "AppDelegate.h"
+#import "Macro.h"
+#import "ColorConfig.h"
+#import "SQLManager.h"
+#import "Alert.h"
+#import "SQLiteHelper.h"
+#import "NSUserDefaultHelper.h"
+#import "Toast.h"
+
+
+/* Library */
+#import "APIManager.h"
+#import "APIConstant.h"
+
+
+/* Config */
+#import "ColorConfig.h"
+#import "Macro.h"
+
+/* Custom View */
+#import "AttandanceCell.h"
+
+/* ViewControllers */
+#import "BaseViewController.h"
+#import "SWRevealViewController.h"
+#import "RegisterViewController.h"
+#import "Register1ViewController.h"
+#import "Register2ViewController.h"
+#import "Register3ViewController.h"
+#import "AttendanceVC.h"
+#import "JournalVC.h"
+#import "RankingVC.h"
+#import "ReportVC.h"
+#import "RosterVC.h"
+#import "StatusVC.h"
+#import "ChallangesVC.h"
+#import "AddJournalVC.h"
+#import "ChallengeDetailVC.h"
+#import "ScoreViewController.h"
+
+#endif

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="ipad9_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="74" id="KGk-i7-Jjw" customClass="AddPlayerCell">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="74"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="600" height="73.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="avatar" translatesAutoresizingMaskIntoConstraints="NO" id="7Tq-6y-PHR">
+                        <rect key="frame" x="8" y="12" width="50" height="50"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="50" id="YDw-Im-aIL"/>
+                            <constraint firstAttribute="height" constant="50" id="u9q-PY-fTD"/>
+                        </constraints>
+                    </imageView>
+                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="s5Z-XF-6Tn">
+                        <rect key="frame" x="78" y="0.0" width="522" height="73"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rcz-D8-nx6">
+                                <rect key="frame" x="0.0" y="0.0" width="522" height="73"/>
+                                <subviews>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Jourcy No" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="qR3-jh-DIy">
+                                        <rect key="frame" x="50" y="26.5" width="74" height="19.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                        <color key="textColor" red="0.1333333333" green="0.1333333333" blue="0.1333333333" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="KQB-lH-WbL">
+                                        <rect key="frame" x="239" y="26.5" width="43" height="19.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                        <color key="textColor" red="0.1333333333" green="0.1333333333" blue="0.1333333333" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="12jan1234" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="0Pi-4n-VXy">
+                                        <rect key="frame" x="398.5" y="26.5" width="73.5" height="19.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                        <color key="textColor" red="0.1333333333" green="0.1333333333" blue="0.1333333333" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="KQB-lH-WbL" firstAttribute="centerX" secondItem="Rcz-D8-nx6" secondAttribute="centerX" id="3Pl-Je-qEH"/>
+                                    <constraint firstItem="KQB-lH-WbL" firstAttribute="centerY" secondItem="Rcz-D8-nx6" secondAttribute="centerY" id="G1G-sd-vLT"/>
+                                    <constraint firstItem="0Pi-4n-VXy" firstAttribute="centerX" secondItem="Rcz-D8-nx6" secondAttribute="centerX" multiplier="5 / 3" id="Thd-0j-TRj"/>
+                                    <constraint firstItem="0Pi-4n-VXy" firstAttribute="centerY" secondItem="Rcz-D8-nx6" secondAttribute="centerY" id="Voa-RZ-5M3"/>
+                                    <constraint firstItem="qR3-jh-DIy" firstAttribute="centerX" secondItem="Rcz-D8-nx6" secondAttribute="centerX" multiplier="1 / 3" id="WBK-aL-6Gc"/>
+                                    <constraint firstItem="qR3-jh-DIy" firstAttribute="centerY" secondItem="Rcz-D8-nx6" secondAttribute="centerY" id="daE-DA-f0N"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                    </stackView>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="s5Z-XF-6Tn" secondAttribute="trailing" id="JgF-pP-4OB"/>
+                    <constraint firstItem="s5Z-XF-6Tn" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" id="M7Y-md-Nud"/>
+                    <constraint firstItem="7Tq-6y-PHR" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="pvc-Mx-Gnb"/>
+                    <constraint firstAttribute="bottom" secondItem="s5Z-XF-6Tn" secondAttribute="bottom" id="q3n-af-RJX"/>
+                    <constraint firstItem="s5Z-XF-6Tn" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="r6B-qe-jin"/>
+                    <constraint firstItem="s5Z-XF-6Tn" firstAttribute="leading" secondItem="7Tq-6y-PHR" secondAttribute="trailing" constant="20" id="s1u-6v-mDA"/>
+                    <constraint firstItem="7Tq-6y-PHR" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="tD1-eW-HPb"/>
+                </constraints>
+            </tableViewCellContentView>
+            <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+            <connections>
+                <outlet property="imgPlayer" destination="7Tq-6y-PHR" id="b5Q-fp-7sY"/>
+                <outlet property="lblBirthDate" destination="0Pi-4n-VXy" id="GMF-uj-7oj"/>
+                <outlet property="lblJourcyNo" destination="qR3-jh-DIy" id="ZT1-fi-EV1"/>
+                <outlet property="lblName" destination="KQB-lH-WbL" id="lAJ-Uu-BeO"/>
+            </connections>
+            <point key="canvasLocation" x="26" y="52"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="avatar" width="75" height="75"/>
+    </resources>
+</document>
