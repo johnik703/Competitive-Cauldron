@@ -26,6 +26,7 @@
 @synthesize mgr_pw;
 @synthesize mgr_email;
 @synthesize EmailMgrRpt;
+@synthesize emailCoachRanking;
 @synthesize contact_name;
 @synthesize contact_address;
 @synthesize contact_city;

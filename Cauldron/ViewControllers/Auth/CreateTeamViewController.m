@@ -13,6 +13,8 @@
 #import "LoginViewController.h"
 #import "MainController.h"
 #import "AppDelegate.h"
+@import SVProgressHUD;
+@import Toast;
 
 @interface CreateTeamViewController () <TeamProfileDelegate>{
     
@@ -53,13 +55,25 @@ static NSString *simpleTableIdentifier = @"AddTeams";
         [self.tableView registerNib:[UINib nibWithNibName:@"AddTeamCell_iPad" bundle:nil] forCellReuseIdentifier:simpleTableIdentifier];
     }
     
-    [self fectchUsersTeams];
-    [self.tableView reloadData];
-    
     if (Global.mode == USER_MODE_CLUB) {
         [self fetchCoachesListFromServer];
     }
+}
+
+- (void) showToastForNotice {
     
+    CSToastStyle *style = [[CSToastStyle alloc] initWithDefaultStyle];
+    style.titleAlignment = NSTextAlignmentCenter;
+    style.messageAlignment = NSTextAlignmentCenter;
+    [self.view makeToast:@"* is Primary Team."
+                duration:10.0
+                position:CSToastPositionBottom
+                   style:style];
+    [CSToastManager setSharedStyle:style];
+    [CSToastManager setTapToDismissEnabled:YES];
+    
+    // toggle queueing behavior
+    [CSToastManager setQueueEnabled:YES];
 }
 
 - (NSString *)whereCaluseString:(NSDictionary *)dic {
@@ -94,12 +108,11 @@ static NSString *simpleTableIdentifier = @"AddTeams";
                              };
     
     [API executeHTTPRequest:Post url:syncToServerServiceURLManageCoach parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+       
         [self parseResponse:responseDict params:params ];
     } ErrorHandler:^(NSString *errorStr) {
         
         NSLog(@"errorStr ---%@", errorStr);
-        [ProgressHudHelper hideLoadingHud];
     }];
     
 }
@@ -138,8 +151,9 @@ static NSString *simpleTableIdentifier = @"AddTeams";
         }
     }
     
+    Global.teamIdsForWhere = strWhere;
         
-    NSString *query = [NSString stringWithFormat:@"SELECT Sports,Team_Name,Team_Picture,TeamID FROM TeamInfo WHERE TeamID %@ order by Team_Name asc", strWhere];
+    NSString *query = [NSString stringWithFormat:@"SELECT Sports,Team_Name,Team_Picture,TeamID, Display_Picture FROM TeamInfo WHERE TeamID %@ order by Team_Name asc", strWhere];
     NSArray *records = [SCSQLite selectRowSQL:query];
     
     cnt = (int)records.count;
@@ -149,10 +163,8 @@ static NSString *simpleTableIdentifier = @"AddTeams";
         tempTeam.Sport = [[records objectAtIndex:i] valueForKey:@"Sports"];
         tempTeam.Team_Picture = [[records objectAtIndex:i] valueForKey:@"Team_Picture"];
         tempTeam.TeamID = (int)[[[records objectAtIndex:i] valueForKey:@"TeamID"] intValue];
+        tempTeam.Display_Picture = (int)[[[records objectAtIndex:i] valueForKey:@"Display_Picture"] intValue];
         [arrTeamsDetail addObject:tempTeam];
-        
-        NSLog(@"test picture---%d, %@, %@", i,tempTeam.Team_Name, tempTeam.Team_Picture);
-        
     }
     
 }
@@ -162,14 +174,15 @@ static NSString *simpleTableIdentifier = @"AddTeams";
     
     [self fectchUsersTeams];
     [self.tableView reloadData];
+    if (Global.mode == USER_MODE_CLUB || Global.mode == USER_MODE_COACH || Global.mode == USER_MODE_DEMO) {
+        [self showToastForNotice];
+    }
 }
 
-- (void)didDisappear {
-    [self fectchUsersTeams];
-    [self.tableView reloadData];
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self.view hideToast];
 }
-
-
 
 - (void)setupUIWithMode {
     
@@ -236,16 +249,28 @@ static NSString *simpleTableIdentifier = @"AddTeams";
     
     Team *tempTeam = [[Team alloc] init];
     tempTeam = [arrTeamsDetail objectAtIndex:indexPath.row];
-    cell.lblTeamName.text=  tempTeam.Team_Name;
+    
+    NSString *teamName = tempTeam.Team_Name;
+    
+    if (tempTeam.TeamID == Global.masterTeamId) {
+        teamName = [NSString stringWithFormat:@"%@*", teamName];
+    }
+    cell.lblTeamName.text= teamName;
     
     cell.lblTeamName.font = [UIFont boldSystemFontOfSize:fontSize];
     
-    NSData *decodedData = [tempTeam.Team_Picture base64Data];
-    if (decodedData) {
-        UIImage* image = [UIImage imageWithData:decodedData];
-        cell.imgTeam.image = image;
+    if (tempTeam.Display_Picture == 1) {
+        
+        [cell.imgTeam setHidden:false];
+        
+        NSData *decodedData = [tempTeam.Team_Picture base64Data];
+        if (decodedData) {
+            UIImage* image = [UIImage imageWithData:decodedData];
+            cell.imgTeam.image = image;
+        }
+    } else {
+        [cell.imgTeam setHidden:true];
     }
-    
     return cell;
 }
 
@@ -253,12 +278,13 @@ static NSString *simpleTableIdentifier = @"AddTeams";
     
     Team *tempTeam = [[Team alloc] init];
     tempTeam = [arrTeamsDetail objectAtIndex:indexPath.row];
-    Global.currentTeamId =  tempTeam.TeamID;    NSLog(@"changed team id----%d", Global.currentTeamId);
+    Global.currentTeamId =  tempTeam.TeamID;
+    NSLog(@"changed team id----%d", Global.currentTeamId);
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE TeamID = %d", Global.currentTeamId];
     NSArray *records = [SCSQLite selectRowSQL:query];
     
-    NSLog(@"teamrecords, %@", records);
+//    NSLog(@"teamrecords, %@", records);
     if ([records count] != 0)
         Global.currntTeam = [DataFetcherHelper getCurrentTeamDataFromDict: [records objectAtIndex:0]];
     
@@ -313,13 +339,14 @@ static NSString *simpleTableIdentifier = @"AddTeams";
                              @"TeamID": String(teamId)
                              };
     
+    [SVProgressHUD show];
     [API executeHTTPRequest:Post url:syncToServerServiceURLManageTeam parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [self parseResponse:responseDict params:params teamId:teamId];
     } ErrorHandler:^(NSString *errorStr) {
         
         NSLog(@"errorStr ---%@", errorStr);
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Something went wrong" message:nil viewController:self];
     }];
     
@@ -370,40 +397,107 @@ static NSString *simpleTableIdentifier = @"AddTeams";
     self.navigationItem.leftBarButtonItem = leftButton;
 }
 
+- (BOOL)checkIfExistDataToSync {
+    // Check more data available for sync
+    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+    
+    NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallangeStat WHERE Sync=%d",1];
+    NSArray *teamPlayersStats = [SCSQLite selectRowSQL:query];
+    
+    
+    NSString *queryAttandance = [NSString stringWithFormat:@"SELECT * FROM playerattendance WHERE sync=%d",1];
+    NSArray *playersAttandace = [SCSQLite selectRowSQL:queryAttandance];
+    
+    NSString *queryJournal = [NSString stringWithFormat:@"SELECT * FROM JournalData WHERE sync=%d",1];
+    NSArray *playersJournal = [SCSQLite selectRowSQL:queryJournal];
+    
+    NSString *queryPlayer = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo WHERE Sync=%d",1];
+    NSArray *playersData = [SCSQLite selectRowSQL:queryPlayer];
+    
+    if (teamPlayersStats.count > 0 || playersAttandace.count > 0 || playersJournal.count > 0 || playersData.count> 0) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 - (void)logout {
+    
     [Alert showOKCancelAlert:@"Are you sure you want to logoff?" message:@"" viewController:self complete:^{
-        UINavigationController *nav = [self.storyboard instantiateInitialViewController];
-        [UserDefaults removeObjectForKey:@"ISLOGIN"];
+        // Check more data available for sync
         
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"ONLINE_PREVIOUS_LOG_PASSWORD"];
-        
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"finalID"];
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"finalPass"];
-        
-        
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERID"];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERPASS"];
-        //    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"CHECKBOXSTAT"];
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"finalID"];
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"finalPass"];
-        
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"0" forKey:@"CHECKBOXSTATSTR"];
-        Global.syncCount = 0;
-        [[NSUserDefaults standardUserDefaults] setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
-        
-        [Global.attendenceDateArr removeAllObjects];
-        [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
-        
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        
-        ApplicationDelegate.window.rootViewController = nav;
+        if ([self checkIfExistDataToSync]) {
+            NSString *message = @"You have some data to sync.\nDo you want to sync before logging off?" ;
+            [Alert showYesNoAlert:@"Warning!" message:message viewController:self complete:^{
+                [self syncData];
+            } canceled:^{
+                [self handleLogout];
+            }];
+        } else {
+            [self handleLogout];
+        }
     } canceled:nil];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)handleLogout {
+    UINavigationController *nav = [self.storyboard instantiateInitialViewController];
+    [UserDefaults removeObjectForKey:@"ISLOGIN"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"ONLINE_PREVIOUS_LOG_PASSWORD"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"finalID"];
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"finalPass"];
+    
+    
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERID"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERPASS"];
+    Global.syncCount = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
+    
+    [Global.attendenceDateArr removeAllObjects];
+    [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
+    
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    ApplicationDelegate.window.rootViewController = nav;
+}
+
+#pragma Sync To Server
+
+- (void) syncData {
+    
+    // check internet connection
+    BOOL checkConnection = [RKCommon checkInternetConnection];
+    if (!checkConnection) {
+        [Alert showAlert:@"Internet Connection Error" message:@"" viewController:self];
+        return;
+    }
+    
+    [SVProgressHUD showWithStatus:@"Uploading Data..."];
+    
+    SyncToServer  *syncToServer = [[SyncToServer alloc]init];
+    syncToServer.delegate = self;
+    [syncToServer startSyncDataToServer];
+}
+
+#pragma Delegate Sync To Server
+
+- (void) SyncToServerProcessCompleted {
+    
+    Global.syncCount = 0;
+    [UserDefaults setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
+    [self.tableView reloadData];
+    
+    [Global.attendenceDateArr removeAllObjects];
+    [UserDefaults setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
+    [UserDefaults synchronize];
+    
+    [SVProgressHUD dismiss];
+    
+    [Alert showAlert:@"Sync Completed!" message:@"" viewController:self complete:^{
+        [self handleLogout];
+    }];
 }
 
 @end

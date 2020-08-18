@@ -29,8 +29,8 @@
     dispatch_async(queue,
                    ^{
                        // Get the JSON string from our web serivce
+                       NSLog(@"webserviceUrl: %@", WebServiceURL);
                        NSDictionary * dictionary = [JSONHelper loadJSONDataFromURL:WebServiceURL];
-                       NSLog(@"dic %@",WebServiceURL);
                        dispatch_async(dispatch_get_main_queue(),
                                       ^{
                                           //This code will run once the JSON-loading section above has completed.
@@ -107,7 +107,6 @@
         NSArray *allChallenges = [DataFetcherHelper getAllChallengeDataFromDict:recieveDataDict];
         if([allChallenges count] == [recieveDataDict count])
         {
-            NSLog(@"url2%@",[NSString stringWithFormat:chalngCategoryServiceURL,userTeamID]);
             [self loadDataRecordsWithURL:[NSString stringWithFormat:chalngCategoryServiceURL,userTeamID] serviceType:@"categoryService" withTeamID:userTeamID];
             
             [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
@@ -125,7 +124,6 @@
         //NSLog(@"Details For Category = %@ And Total : %d",allCatagories,allCatagories.count);
         if([allCatagories count] == [recieveDataDict count])
         {
-            NSLog(@"url1%@",[NSString stringWithFormat:chalngStateServiceURL,userTeamID]);
             [self loadDataRecordsWithURL:[NSString stringWithFormat:chalngStateServiceURL,userTeamID] serviceType:@"chalStateService" withTeamID:userTeamID];
             
             [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
@@ -231,7 +229,7 @@
     
     if(success)
     {
-        NSLog( @"Succsefully Deleted Table : %@",dbTableName);
+//        NSLog( @"Succsefully Deleted Table : %@",dbTableName);
     }
 }
 

@@ -22,6 +22,8 @@
 @property (nonatomic, copy) NSString *admin_pw;
 @property (nonatomic, copy) NSString *admin_email;
 @property (nonatomic, copy) NSString *EmailAdminRpt;
+@property (nonatomic, assign) int emailCoachRanking;
+
 @property (nonatomic, copy) NSString *mgr_name;
 @property (nonatomic, copy) NSString *mgr_pw;
 @property (nonatomic, copy) NSString *mgr_email;
@@ -51,7 +53,7 @@
 @property (nonatomic, copy) NSString *SeasonEnd;
 @property (nonatomic, assign) int Bulk_Import;
 @property (nonatomic, copy) NSString *Team_Picture;
-@property (nonatomic, copy) NSString *Display_Picture;
+@property (nonatomic, assign) int Display_Picture;
 @property (nonatomic, assign) int demoTeam;
 @property (nonatomic, copy) NSString *modified;
 @property (nonatomic, copy) NSString *quote;

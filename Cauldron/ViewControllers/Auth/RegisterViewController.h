@@ -10,7 +10,9 @@
 #import "UIViewController+Utils.h"
 #import "Enums.h"
 
-@interface RegisterViewController : BaseViewController
+@interface RegisterViewController : BaseViewController {
+    NSMutableDictionary *teamDictionary;
+}
 @property (weak, nonatomic) IBOutlet UIStackView *menuStackView;
 
 @property (assign, nonatomic) RegisterState navigationStatus;
@@ -31,5 +33,7 @@
 @property (weak, nonatomic) IBOutlet SkyFloatingLabelTextField *zipFLTF;
 
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *rightBtn;
+@property (weak, nonatomic) IBOutlet UIView *emailCoachRankingView;
+@property (weak, nonatomic) IBOutlet UISwitch *emailCoachRankingSwich;
 
 @end

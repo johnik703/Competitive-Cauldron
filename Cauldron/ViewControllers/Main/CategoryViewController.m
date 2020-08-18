@@ -70,7 +70,7 @@ static NSString *simpleTableIdentifier = @"LeftMenuTableViewCell";
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name='%@' AND admin_pw='%@'",[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"],[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"]];
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
-    NSLog(@"Found Record Details : %@",recordsFound);
+//    NSLog(@"Found Record Details : %@",recordsFound);
     
     int userLevel;
     
@@ -164,23 +164,30 @@ static NSString *simpleTableIdentifier = @"LeftMenuTableViewCell";
     
     // edit the category
     
-    [self.tableview deselectRowAtIndexPath:indexPath animated:YES];
-    EditCategoryViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"EditCategoryVC"];
-    NSString *teamName = Global.currntTeam.Team_Name;
-    viewController.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Edit Categlory"];
+    if (Global.currntTeam.TeamID == Global.masterTeamId) {
+        [self.tableview deselectRowAtIndexPath:indexPath animated:YES];
+        EditCategoryViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"EditCategoryVC"];
+        NSString *teamName = Global.currntTeam.Team_Name;
+        viewController.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Edit Categlory"];
+        
+        viewController->str_categoryName = chalCatArray[indexPath.row][@"CategoryName"];
+        viewController->str_shortName = chalCatArray[indexPath.row][@"ShortName"] == nil ? @"" : chalCatArray[indexPath.row][@"ShortName"];
+        viewController->str_order = chalCatArray[indexPath.row][@"CatOrder"] == nil ? 0 : (int)[chalCatArray[indexPath.row][@"CatOrder"] intValue];
+        viewController->catId = chalCatArray[indexPath.row][@"CatID"] == nil ? 0 : (int)[chalCatArray[indexPath.row][@"CatID"] intValue];
+        viewController.delegate = self;
+        
+        NSLog(@"viewController->str_categoryName----%@", viewController->str_categoryName);
+        NSLog(@"viewController->str_shortName----%@", viewController->str_shortName);
+        NSLog(@"viewController->str_order----%d", viewController->str_order);
+        
+        viewController.navigationCategoryStatus = CategoryState_Edit;
+        [self.navigationController pushViewController:viewController animated:YES];
+        
+    } else {
+        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
+    }
     
-    viewController->str_categoryName = chalCatArray[indexPath.row][@"CategoryName"];
-    viewController->str_shortName = chalCatArray[indexPath.row][@"ShortName"] == nil ? @"" : chalCatArray[indexPath.row][@"ShortName"];
-    viewController->str_order = chalCatArray[indexPath.row][@"CatOrder"] == nil ? 0 : (int)[chalCatArray[indexPath.row][@"CatOrder"] intValue];
-    viewController->catId = chalCatArray[indexPath.row][@"CatID"] == nil ? 0 : (int)[chalCatArray[indexPath.row][@"CatID"] intValue];
-    viewController.delegate = self;
     
-    NSLog(@"viewController->str_categoryName----%@", viewController->str_categoryName);
-    NSLog(@"viewController->str_shortName----%@", viewController->str_shortName);
-    NSLog(@"viewController->str_order----%d", viewController->str_order);
-    
-    viewController.navigationCategoryStatus = CategoryState_Edit;
-    [self.navigationController pushViewController:viewController animated:YES];
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -205,7 +212,7 @@ static NSString *simpleTableIdentifier = @"LeftMenuTableViewCell";
         }
 
     } else {
-        [Alert showAlert:@"Forbidden!" message:@"You can't delete Category" viewController:self];
+        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
     }
 }
 

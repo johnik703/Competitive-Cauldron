@@ -43,10 +43,9 @@
     aUser.arrTeams = [[NSMutableArray alloc] init];
     NSArray* arrTemp = [[NSArray alloc] initWithArray:[aUser.teams componentsSeparatedByString:@"<id>"]];
     
-    NSLog(@"composentArr, %@", arrTemp);
+//    NSLog(@"composentArr, %@", arrTemp);
     int cnt = (int)[arrTemp count];
     for (int i = 1; i < cnt; i++){
-        NSLog(@"item %d = %d", i, [[arrTemp objectAtIndex:i] intValue]);
         NSNumber *val = [NSNumber numberWithInteger:[[arrTemp objectAtIndex:i] intValue]];
         [aUser.arrTeams addObject:val];
     }
@@ -56,7 +55,7 @@
 +(NSArray*)getAllPlayerDataFromDict:(NSDictionary*)recieveDataDict
 {
     
-    NSLog(@"players info = %@",recieveDataDict);
+//    NSLog(@"players info = %@",recieveDataDict);
     
     NSMutableArray *allPlayers = [[NSMutableArray alloc]init];
     
@@ -97,7 +96,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted Player ID = %d",aPlayer.PlayerID);
+//            NSLog(@"SuccessFully Inserted Player ID = %d",aPlayer.PlayerID);
         }
     }
     return allPlayers;
@@ -105,7 +104,7 @@
 
 + (NSArray *)getAllCoachesDataFromDict:(NSDictionary *)recieveDataDict {
     
-    NSLog(@"coachesreceiveDic, %@", recieveDataDict);
+//    NSLog(@"coachesreceiveDic, %@", recieveDataDict);
     
     NSMutableArray *allCoaches = [[NSMutableArray alloc]init];
     
@@ -137,7 +136,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted coach ID = %d",aCoach.coachID);
+//            NSLog(@"SuccessFully Inserted coach ID = %d",aCoach.coachID);
         }
     }
     return allCoaches;
@@ -175,7 +174,7 @@
 {
     Team *ateam = [[Team alloc] init];
     
-    NSLog(@"currentteamsDic, %@", oneTeam);
+//    NSLog(@"currentteamsDic, %@", oneTeam);
     
     ateam.userLevel = [oneTeam objectForKey:@"UserLevel"];
     ateam.Website_Logo = [oneTeam objectForKey:@"Website_logo"];
@@ -191,7 +190,7 @@
     ateam.contact_state = [oneTeam objectForKey:@"contact_state"];
     ateam.contact_zip = [oneTeam objectForKey:@"contact_zip"];
     ateam.currently_running = [oneTeam objectForKey:@"currently_running"];
-    
+    ateam.emailCoachRanking  = (int)[[oneTeam objectForKey:@"emailCoachRanking"] integerValue];
     //missing date_of_month
     
     ateam.day_of_week = [oneTeam objectForKey:@"day_of_week"];
@@ -218,7 +217,7 @@
     ateam.Desc1 = [oneTeam objectForKey:@"Desc1"];
     ateam.Desc2 = [oneTeam objectForKey:@"Desc2"];
     ateam.Desc3 = [oneTeam objectForKey:@"Desc3"];
-    ateam.Display_Picture = [oneTeam objectForKey:@"Display_Picture"];
+    ateam.Display_Picture = (int)[[oneTeam objectForKey:@"Display_Picture"] integerValue];
     ateam.Email1 = [oneTeam objectForKey:@"Email1"];
     ateam.Email2 = [oneTeam objectForKey:@"Email2"];
     ateam.Email3 = [oneTeam objectForKey:@"Email3"];
@@ -240,13 +239,15 @@
     ateam.Team_Picture = [oneTeam objectForKey:@"Team_Picture"];
     ateam.isSubscribe = (int)[[oneTeam objectForKey:@"isSubscribe"] integerValue];
     
+    
+    NSLog(@"email coach ranking: %d", ateam.emailCoachRanking);
     return ateam;
 }
 
 +(NSArray*)getAllTeamDataFromDict:(NSDictionary*)recieveDataDict
 {
     
-    NSLog(@"teamsDic, %@", recieveDataDict);
+//    NSLog(@"teamsDic, %@", recieveDataDict);
     NSMutableArray *allTeamInfo = [[NSMutableArray alloc]init];
     
     [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
@@ -275,6 +276,7 @@
         //        aTeam.admin_pw = [NSString stringWithFormat:@"%@",[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"]];
         aTeam.admin_email = [oneTeam objectForKey:@"admin_email"];
         aTeam.EmailAdminRpt = [oneTeam objectForKey:@"EmailAdminRpt"];
+        aTeam.emailCoachRanking  = (int)[[oneTeam objectForKey:@"email_ranking"] integerValue];
         aTeam.mgr_name = [oneTeam objectForKey:@"mgr_name"];
         aTeam.mgr_pw = [oneTeam objectForKey:@"mgr_pw"];
         aTeam.mgr_email = [oneTeam objectForKey:@"mgr_email"];
@@ -304,28 +306,43 @@
         aTeam.SeasonEnd = [oneTeam objectForKey:@"SeasonEnd"];
         aTeam.Bulk_Import = (int)[[oneTeam objectForKey:@"Bulk_Import"]integerValue];
         aTeam.Team_Picture = [oneTeam objectForKey:@"Team_Picture"];
-        aTeam.Display_Picture = [oneTeam objectForKey:@"Display_Picture"];
+        aTeam.Display_Picture = (int)[[oneTeam objectForKey:@"Display_Picture"] integerValue];
         aTeam.demoTeam = (int)[[oneTeam objectForKey:@"demoTeam"]integerValue];
         aTeam.modified = [oneTeam objectForKey:@"modified"];
         aTeam.quote = [oneTeam objectForKey:@"quote"];
         aTeam.noofmonth = [oneTeam objectForKey:@"noofmonth"];
         aTeam.team_position = [oneTeam objectForKey:@"team_position"];
         
-        aTeam.run_only_once = (int)[[oneTeam objectForKey:@"run_only_once"] intValue];
+//        aTeam.run_only_once = (int)[[oneTeam objectForKey:@"run_only_once"] integerValue];
+        
+        NSString *runOnlyOnceString = [oneTeam objectForKey:@"run_only_once"];
+        if (runOnlyOnceString == (NSString *)[NSNull null]) {
+            aTeam.run_only_once = 0;
+        } else {
+            aTeam.run_only_once = (int)[runOnlyOnceString integerValue];
+        }
+        
         aTeam.selected_option = [oneTeam objectForKey:@"selected_option"];
-        aTeam.sendBirthdayAlert = (int)[[oneTeam objectForKey:@"sendBirthdayAlert"] intValue];
+        aTeam.sendBirthdayAlert = (int)[[oneTeam objectForKey:@"sendBirthdayAlert"] integerValue];
         aTeam.subscription_end = [oneTeam objectForKey:@"subscription_end"];
         aTeam.time_of_day = [oneTeam objectForKey:@"time_of_day"];
-        aTeam.birthdayAlert = (int)[[oneTeam objectForKey:@"birthdayAlert"] intValue];
+        aTeam.birthdayAlert = (int)[[oneTeam objectForKey:@"birthdayAlert"] integerValue];
         aTeam.day_of_week = [oneTeam objectForKey:@"day_of_week"];
-        aTeam.currently_running= [oneTeam objectForKey:@"currently_running"];
         
-        aTeam.showbest= (int)[[oneTeam objectForKey:@"showbest"] intValue];
-        aTeam.showworst= (int)[[oneTeam objectForKey:@"showworst"] intValue];
-        aTeam.showlegend= (int)[[oneTeam objectForKey:@"showlegend"] intValue];
-        aTeam.email_login= (int)[[oneTeam objectForKey:@"email_login"] intValue];
-        aTeam.email_journal= (int)[[oneTeam objectForKey:@"email_journal"] intValue];
-        aTeam.show_report_to_player = (int)[[oneTeam objectForKey:@"show_report_to_player"] intValue];
+//        aTeam.currently_running= [oneTeam objectForKey:@"currently_running"];
+        NSString *currentlyRunning = [oneTeam objectForKey:@"currently_running"];
+        if (currentlyRunning == (NSString *)[NSNull null]) {
+            aTeam.currently_running = @"0";
+        } else {
+            aTeam.currently_running = currentlyRunning;
+        }
+        
+        aTeam.showbest= (int)[[oneTeam objectForKey:@"showbest"] integerValue];
+        aTeam.showworst= (int)[[oneTeam objectForKey:@"showworst"] integerValue];
+        aTeam.showlegend= (int)[[oneTeam objectForKey:@"showlegend"] integerValue];
+        aTeam.email_login= (int)[[oneTeam objectForKey:@"email_login"] integerValue];
+        aTeam.email_journal= (int)[[oneTeam objectForKey:@"email_journal"] integerValue];
+        aTeam.show_report_to_player = (int)[[oneTeam objectForKey:@"show_report_to_player"] integerValue];
         aTeam.isSubscribe = (int)[[oneTeam objectForKey:@"isSubscribe"] integerValue];
 
         NSString *prevLevel = [[NSUserDefaults standardUserDefaults] stringForKey:@"ONLINE_PREVIOUS_LOG_USERLEVEL"];
@@ -333,24 +350,26 @@
 
         aTeam.teams=teams;
         
-        NSLog(@"subscibe, %d", aTeam.isSubscribe);
+        NSLog(@"TeamID, %d", aTeam.TeamID);
+        NSLog(@"admin_name, %@", aTeam.admin_name);
+        NSLog(@"email coach ranking: %d", aTeam.emailCoachRanking);
         
         
         [allTeamInfo addObject:aTeam];
         
 
-        NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO TeamInfo (TeamID,Sports,Stats_Year,Team_Name,Website_Logo,Team_Desc1,Team_Desc2,Team_Desc3,admin_name,admin_pw,admin_email,EmailAdminRpt,mgr_name,mgr_pw,mgr_email,EmailMgrRpt,contact_name,contact_address,contact_city,contact_state,contact_zip,contact_email,contact_phone,trial,SubscriptionEnd,Activated,Notes,Desc1,Email1,EmailDesc1Rpt,Desc2,Email2,EmailDesc2Rpt,Desc3,Email3,EmailDesc3Rpt,ReprtFitness,SeasonStart,SeasonEnd,Bulk_Import,Team_Picture,Display_Picture,demoTeam,modified,quote,noofmonth,team_position,birthdayAlert,sendBirthday,currently_running,run_only_once,time_of_day,selected_option,day_of_week ,userLevel,teams,Sync,showbest,showworst,showlegend,email_login,email_journal, isSubscribe) VALUES(%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@',%d,'%@',%d,%d,'%@','%@',%d,'%@','%d','%d','%@','%d','%@','%@','%@','%@','%@',%d,'%d','%d','%d','%d','%d', '%d')",aTeam.TeamID,aTeam.Sport,aTeam.Stats_Year,aTeam.Team_Name,aTeam.Website_Logo,aTeam.Team_Desc1,aTeam.Team_Desc2,aTeam.Team_Desc3,aTeam.admin_name,aTeam.admin_pw,aTeam.admin_email,aTeam.EmailAdminRpt,aTeam.mgr_name,aTeam.mgr_pw,aTeam.mgr_email,aTeam.EmailMgrRpt,aTeam.contact_name,aTeam.contact_address,aTeam.contact_city,aTeam.contact_state,aTeam.contact_zip,aTeam.contact_email,aTeam.contact_phone,aTeam.trial,aTeam.subscription_end,aTeam.Activated,aTeam.Notes,aTeam.Desc1,aTeam.Email1,aTeam.EmailDesc1Rpt,aTeam.Desc2,aTeam.Email2,aTeam.EmailDesc2Rpt,aTeam.Desc3,aTeam.Email3,aTeam.EmailDesc3Rpt,aTeam.rptFitness,aTeam.SeasonStart,aTeam.SeasonEnd,aTeam.Bulk_Import,aTeam.Team_Picture,aTeam.Display_Picture,aTeam.demoTeam,aTeam.modified,aTeam.quote,aTeam.noofmonth,aTeam.team_position,aTeam.birthdayAlert,aTeam.sendBirthdayAlert,aTeam.currently_running,aTeam.run_only_once,aTeam.time_of_day,aTeam.selected_option,aTeam.day_of_week,aTeam.userLevel,aTeam.teams,0,aTeam.showbest,aTeam.showworst,aTeam.showlegend,aTeam.email_login,aTeam.email_journal, aTeam.isSubscribe];
+        NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO TeamInfo (TeamID,Sports,Stats_Year,Team_Name,Website_Logo,Team_Desc1,Team_Desc2,Team_Desc3,admin_name,admin_pw,admin_email,EmailAdminRpt,mgr_name,mgr_pw,mgr_email,EmailMgrRpt,contact_name,contact_address,contact_city,contact_state,contact_zip,contact_email,contact_phone,trial,SubscriptionEnd,Activated,Notes,Desc1,Email1,EmailDesc1Rpt,Desc2,Email2,EmailDesc2Rpt,Desc3,Email3,EmailDesc3Rpt,ReprtFitness,SeasonStart,SeasonEnd,Bulk_Import,Team_Picture,Display_Picture,demoTeam,modified,quote,noofmonth,team_position,birthdayAlert,sendBirthday,currently_running,run_only_once,time_of_day,selected_option,day_of_week ,userLevel,teams,Sync,showbest,showworst,showlegend,email_login,email_journal, isSubscribe, emailCoachRanking) VALUES(%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@','%@','%@','%@','%@','%@','%@','%@','%@',%d,'%@','%@',%d,'%@',%d,%d,'%@','%@',%d,'%@','%d','%d','%@','%d','%@','%@','%@','%@','%@',%d,'%d','%d','%d','%d','%d', '%d','%d')",aTeam.TeamID,aTeam.Sport,aTeam.Stats_Year,aTeam.Team_Name,aTeam.Website_Logo,aTeam.Team_Desc1,aTeam.Team_Desc2,aTeam.Team_Desc3,aTeam.admin_name,aTeam.admin_pw,aTeam.admin_email,aTeam.EmailAdminRpt,aTeam.mgr_name,aTeam.mgr_pw,aTeam.mgr_email,aTeam.EmailMgrRpt,aTeam.contact_name,aTeam.contact_address,aTeam.contact_city,aTeam.contact_state,aTeam.contact_zip,aTeam.contact_email,aTeam.contact_phone,aTeam.trial,aTeam.subscription_end,aTeam.Activated,aTeam.Notes,aTeam.Desc1,aTeam.Email1,aTeam.EmailDesc1Rpt,aTeam.Desc2,aTeam.Email2,aTeam.EmailDesc2Rpt,aTeam.Desc3,aTeam.Email3,aTeam.EmailDesc3Rpt,aTeam.rptFitness,aTeam.SeasonStart,aTeam.SeasonEnd,aTeam.Bulk_Import,aTeam.Team_Picture,aTeam.Display_Picture,aTeam.demoTeam,aTeam.modified,aTeam.quote,aTeam.noofmonth,aTeam.team_position,aTeam.birthdayAlert,aTeam.sendBirthdayAlert,aTeam.currently_running,aTeam.run_only_once,aTeam.time_of_day,aTeam.selected_option,aTeam.day_of_week,aTeam.userLevel,aTeam.teams,0,aTeam.showbest,aTeam.showworst,aTeam.showlegend,aTeam.email_login,aTeam.email_journal, aTeam.isSubscribe, aTeam.emailCoachRanking];
 
 
         
-        NSLog(@"Insert Into TeamInfor Query ==== %d",aTeam.TeamID);
+//        NSLog(@"Insert Into TeamInfor Query ==== %d",aTeam.TeamID);
         
         BOOL success = [SCSQLite executeSQL:inserQuery];
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted Team ID = %d",aTeam.TeamID);
-        }  
+//            NSLog(@"SuccessFully Inserted Team ID = %d",aTeam.TeamID);
+        }
     }
     return allTeamInfo;
 }
@@ -362,7 +381,7 @@
     
     [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
     
-    NSLog(@"testRecieveChallengeData, %@", recieveDataDict);
+//    NSLog(@"testRecieveChallengeData, %@", recieveDataDict);
     
     for(NSDictionary *oneChallenge in recieveDataDict)
     {
@@ -399,7 +418,7 @@
         aChalng.isDecimal = (int)[[oneChallenge objectForKey:@"isDecimal"] integerValue];
         aChalng.Challenge_Pic = [oneChallenge objectForKey:@"Challenge_Pic"];
         aChalng.isHome = (int)[[oneChallenge objectForKey:@"isHome"]integerValue];
-        aChalng.playersCount =(int) [[oneChallenge objectForKey:@"playersCount"]integerValue];
+        aChalng.playersCount =(int) [[oneChallenge objectForKey:@"playerCount"]integerValue];
         aChalng.modified = [oneChallenge objectForKey:@"modified"];
         
         /*
@@ -439,7 +458,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted Challenge ID = %d, %@",aChalng.ID, aChalng.Challenge_Type);
+//            NSLog(@"SuccessFully Inserted Challenge ID = %d, %@",aChalng.ID, aChalng.Challenge_Type);
         }
     }
     return allChallenges;
@@ -449,7 +468,7 @@
 {
     NSMutableArray *allCategory = [[NSMutableArray alloc]init];
     
-    NSLog(@"testRecieveCategoryData, %@", recieveDataDict);
+//    NSLog(@"testRecieveCategoryData, %@", recieveDataDict);
     
     [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
     
@@ -481,7 +500,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted Category ID = %d",aCatgry.catID);
+//            NSLog(@"SuccessFully Inserted Category ID = %d",aCatgry.catID);
         }
     }
     return allCategory;
@@ -528,7 +547,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted ChallengeImage ID = %d", aChalngImage.ChalngID);
+//            NSLog(@"SuccessFully Inserted ChallengeImage ID = %d", aChalngImage.ChalngID);
         }
     }
     return allChalngImage;
@@ -552,13 +571,6 @@
         aScoreState.chalStColVal = [oneScoreStat objectForKey:@"column_val"];
         aScoreState.chalModDate = [oneScoreStat objectForKey:@"Date"];
         
-        NSLog(@"Stat ID = %d",aScoreState.StatID);
-        NSLog(@"Stat Team = %d",aScoreState.chStTeamID);
-        NSLog(@"Stat ChallengeID = %d",aScoreState.chalStID);
-        NSLog(@"Stat Player ID = %d",aScoreState.chalStPlayerID);
-        NSLog(@"Stat ColName = %@",aScoreState.chalStColName);
-        NSLog(@"Stat ColVal = %@",aScoreState.chalStColVal);
-        
         [allScoreStates addObject:aScoreState];
         
         //CREATE TABLE ChallangeStat (ChStatID integer,TeamID integer,ChallangeID integer,PlayerID integer,column_name varchar,column_val varchar,Date varchar,Sync integer)
@@ -571,7 +583,7 @@
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted ScoreStat ID = %d", aScoreState.StatID);
+//            NSLog(@"SuccessFully Inserted ScoreStat ID = %d", aScoreState.StatID);
         }
     }
     return allScoreStates;
@@ -602,13 +614,13 @@
         
         NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO JournalData (id,TeamID,PlayerID,notes,add_date,Sync) VALUES(%d,%d,%d,'%@','%@',%d)",aJournal.journalId,aJournal.teamId,aJournal.playerId,aJournal.notes,aJournal.add_date,0];
         
-        NSLog(@"Query ==== %@",inserQuery);
+//        NSLog(@"Query ==== %@",inserQuery);
         
         BOOL success = [SCSQLite executeSQL:inserQuery];
         
         if(success)
         {
-            NSLog(@"SuccessFully Inserted ScoreStat ID = %d", aJournal.journalId);
+//            NSLog(@"SuccessFully Inserted ScoreStat ID = %d", aJournal.journalId);
         }
     }
     return allJournalData;
@@ -619,10 +631,13 @@
 {
     NSMutableArray *allJournalData = [[NSMutableArray alloc]init];
     
-    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+//    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
     
     for (NSDictionary *oneScoreStat in recieveDataDict)
     {
+        
+//        NSLog(@"rank data %@:", oneScoreStat);
+        
         Ranking *aRanking= [[Ranking alloc]init];
         
         aRanking.rankID=(int)[[oneScoreStat objectForKey:@"ID"]integerValue];
@@ -632,11 +647,25 @@
         aRanking.rank=(int)[[oneScoreStat objectForKey:@"rank"] integerValue];
         aRanking.avg1= [oneScoreStat objectForKey:@"average"];
         aRanking.playerName=[oneScoreStat objectForKey:@"Player_Name"];
+        
+        NSMutableDictionary *graphData = [oneScoreStat objectForKey:@"graph"];
+        aRanking.graphArray = graphData;
+//        NSLog(@"graphData data %@:", aRanking.graphArray);
+        
+        
         [allJournalData addObject:aRanking];
         
-        //CREATE TABLE ChallangeStat (ChStatID integer,TeamID integer,ChallangeID integer,PlayerID integer,column_name varchar,column_val varchar,Date varchar,Sync integer)
-         //(id integer primary key autoincrement,TeamID integer,PlayerID integer,Player_Name varchar,ChallengeID integer,average integer,rank integer)
         
+        
+        
+        //create table query
+        /*
+        CREATE TABLE ChallangeStat (ChStatID integer,TeamID integer,ChallangeID integer,PlayerID integer,column_name varchar,column_val varchar,Date varchar,Sync integer)
+         (id integer primary key autoincrement,TeamID integer,PlayerID integer,Player_Name varchar,ChallengeID integer,average integer,rank integer)
+        */
+        
+        //insert ranking data into the db
+        /*
         NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO RankingData (id,TeamID,PlayerID,Player_Name,ChallengeID,average,rank) VALUES(%d,%d,%d,'%@','%d',%@,%d)",aRanking.rankID,aRanking.teamId,aRanking.playerId,aRanking.playerName,aRanking.chanllangeId,aRanking.avg1,aRanking.rank];
         
         
@@ -646,6 +675,7 @@
         {
           //  NSLog(@"SuccessFully Inserted ScoreStat ID = %d", aRanking.rankID);
         }
+         */
     }
     return allJournalData;
 }

@@ -133,6 +133,10 @@
 
 
 // phone version
+
+#define FINAL_APP_VERSION @"v6.0(12)"
+#define FINAL_DATABASE_VERSION 3
+
 #define IS_IPAD (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 #define IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 #define IS_RETINA ([[UIScreen mainScreen] scale] >= 2.0)

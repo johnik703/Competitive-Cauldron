@@ -21,6 +21,7 @@
     int fitnessHeight;
     int showTiesHeight;
     int addFieldHeight;
+    int rankCountCellHeight;
     
     NSMutableDictionary *ChallengeSubcategoryDictionary;
     @public
@@ -32,6 +33,7 @@
 @property (assign, nonatomic) ChallengeFitnessState navigationFitnessStatus;
 
 @property (weak, nonatomic) IBOutlet UIImageView *photoImgView;
+@property (weak, nonatomic) IBOutlet UIButton *addPictureButton;
 @property (weak, nonatomic) IBOutlet UITextField *txt_challengeMenu;
 @property (weak, nonatomic) IBOutlet UITextField *txt_challengeText1;
 @property (weak, nonatomic) IBOutlet UITextField *txt_challengeText2;
@@ -51,9 +53,11 @@
 @property (weak, nonatomic) IBOutlet UISwitch *switch_continueAdding;
 @property (weak, nonatomic) IBOutlet UILabel *showTiesLabel;
 @property (weak, nonatomic) IBOutlet UISwitch *showTiesSwitch;
+@property (weak, nonatomic) IBOutlet UISwitch *displayHomepageSwitch;
 
 @property (weak, nonatomic) IBOutlet UITextView *descriptionText;
 @property (weak, nonatomic) IBOutlet UILabel *addCustomTypeLabel;
+@property (weak, nonatomic) IBOutlet IQDropDownTextField *rankCountTextField;
 
 @property (weak, nonatomic) IBOutlet UIButton *addCustomTypeButton;
 

@@ -7,8 +7,9 @@
 //
 
 #import "AddPlayerVC.h"
+@import SVProgressHUD;
 
-@interface AddPlayerVC () <SHMultipleSelectDelegate, UITextFieldDelegate>
+@interface AddPlayerVC () <SHMultipleSelectDelegate, UITextFieldDelegate, IQDropDownTextFieldDelegate>
 {
     NSMutableArray *selectedPositionArr;
     NSString *selectedPositionStr;
@@ -19,6 +20,7 @@
 @end
 
 @implementation AddPlayerVC
+@synthesize photoImgView, photoBtn;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -26,9 +28,11 @@
     
     self.birthdayDDTF.dropDownMode = IQDropDownModeDatePicker;
     self.birthdayDDTF.dateFormatter = [NSDateFormatter formatterFromFormatString:@"MM-dd-yyyy"];
+    self.birthdayDDTF.delegate = self;
     
     _graduationDateDDTF.dropDownMode = IQDropDownModeDatePicker;
     _graduationDateDDTF.dateFormatter = [NSDateFormatter formatterFromFormatString:@"MM-dd-yyyy"];
+    self.graduationDateDDTF.delegate = self;
     
     _userlevelTF.userInteractionEnabled = false;
     
@@ -64,6 +68,8 @@
     NSString *teamName = Global.currntTeam.Team_Name;
     
     _usernameTF.delegate = self;
+    _firstNameTF.delegate = self;
+    _lastNameTF.delegate = self;
     
     if (self.navigationRosterStatus == RosterState_Add) {
         self.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Add Player"];
@@ -104,6 +110,17 @@
     [self addPlayer];
 }
 
+- (void)textField:(IQDropDownTextField *)textField didSelectDate:(NSDate *)date {
+    
+    if (textField == _birthdayDDTF) {
+        [_birthdayDDTF setSelected:true];
+    }
+    
+    if (textField == _graduationDateDDTF) {
+        [_graduationDateDDTF setSelected:true];
+    }
+}
+
 #define ACCEPTABLE_CHARACTERS @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_."
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string  {
@@ -116,7 +133,30 @@
         return [string isEqualToString:filtered];
     }
     
-    return nil;
+    return string;
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    if (textField == _lastNameTF || textField == _firstNameTF) {
+        NSString *username = [self getUsername];
+        _usernameTF.text = username;
+    }
+}
+
+- (NSString *)getUsername {
+    NSString *firstname = _firstNameTF.text;
+    NSString *lastname = _lastNameTF.text;
+    
+    if ([firstname isEqualToString:@""] || [firstname isEqual:[NSNull null]]) {
+        return @"";
+    }
+    
+    if ([lastname isEqualToString:@""] || [lastname isEqual:[NSNull null]]) {
+        return @"";
+    }
+    
+    NSString *username = [NSString stringWithFormat:@"%@%@", [firstname substringToIndex:1], lastname];
+    return username;
 }
 
 - (IBAction)didTapCancel:(id)sender {
@@ -124,37 +164,49 @@
 }
 
 - (IBAction)didTapPhoto:(id)sender {
-    UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
-    UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
-
-    }];
-    UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
-
-    }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    
-    [actionSheet addAction:cameraAction];
-    [actionSheet addAction:libraryAction];
-    [actionSheet addAction:cancelAction];
-    
-    [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
-    
-    UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
-    popPresenter.sourceView = (UIButton *)sender;
-    popPresenter.sourceRect = ((UIButton *)sender).bounds;
-    
-    [self presentViewController:actionSheet animated:true completion:nil];
+    UIImage *addPictureImage = [UIImage imageNamed:@"ic_camera"];
+    if ([[photoBtn currentImage] isEqual:addPictureImage]) {
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
+        UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
+        
+        [actionSheet addAction:cameraAction];
+        [actionSheet addAction:libraryAction];
+        [actionSheet addAction:cancelAction];
+        
+        [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
+        
+        UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
+        popPresenter.sourceView = (UIButton *)sender;
+        popPresenter.sourceRect = ((UIButton *)sender).bounds;
+        
+        [self presentViewController:actionSheet animated:true completion:nil];
+    } else {
+        [Alert showOKCancelAlert:nil message:@"Are you sure you want to remove roster's picture?" viewController:self complete:^{
+            
+            photoImgView.image = nil;
+            player.Photo = @"";
+            isSelectedPhoto = false;
+            [photoBtn setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
+        } canceled:nil];
+    }
 }
 
 - (IBAction)didTapPosition:(id)sender {
@@ -174,8 +226,9 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     UIImage *image = [info valueForKey:UIImagePickerControllerEditedImage];
-    _photoImgView.image = image;
+    photoImgView.image = image;
     isSelectedPhoto = true;
+    [photoBtn setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -293,8 +346,12 @@
     player.Position = selectedPositionStr;
     player.Phone = self.contactNoTF.text == nil ? @"" : self.contactNoTF.text;
     player.Grade = self.gradeDDTF.selectedItem == nil? @"" : _gradeDDTF.selectedItem;
-    player.BirthDate = _birthdayDDTF.isSelected ? [self.birthdayDDTF.date stringWithFormat:@"MM-dd-yyyy"] : @"";
-    player.GraduationDate = self.graduationDateDDTF.isSelected ? [self.graduationDateDDTF.date stringWithFormat:@"MM-dd-yyyy"] : @"";
+    player.BirthDate = [_birthdayDDTF isSelected] ? [self.birthdayDDTF.date stringWithFormat:@"MM-dd-yyyy"] : @"";
+    NSLog(@"graduateionDate: %@", _graduationDateDDTF.selectedItem);
+    player.GraduationDate = [self.graduationDateDDTF isSelected] ? self.graduationDateDDTF.selectedItem : @"";
+    
+//    player.GraduationDate = _graduationDateDDTF.selectedItem == nil? @"" : [_graduationDateDDTF.selectedItem
+//    player.GraduationDate = _graduationDateDDTF.isSelected ? [self.graduationDateDDTF.date stringWithFormat:@"MM-dd-yyyy"] : @"";
     
     player.EmailPRpt = self.emailSwitch.isOn ? 1: 0;
     player.EmailDRpt = self.dadEmailSwitch.isOn ? 1 : 0;
@@ -306,13 +363,8 @@
         player.Photo = base64;
     } else {
         
-        if (self.navigationRosterStatus == RosterState_Update) {
-            player.Photo = Global.currntTeam.Team_Picture;
-        } else {
-            UIImage *image = [UIImage imageNamed:@"avatar"];
-            _photoImgView.image = image;
-            base64 = [UIImagePNGRepresentation(_photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-            player.Photo = base64;
+        if (self.navigationRosterStatus != RosterState_Update) {
+            player.Photo = @"";
         }
     }
     
@@ -335,7 +387,7 @@
     [playerDictionary setValue:String(player.EmailPRpt) forKey:@"EmailPRpt"];
     [playerDictionary setValue:String(player.EmailDRpt) forKey:@"EmailDRpt"];
     [playerDictionary setValue:String(player.EmailMRpt) forKey:@"EmailMRpt"];
-    [playerDictionary setValue:base64 forKey:@"Photo"];
+    [playerDictionary setValue:player.Photo forKey:@"Photo"];
     
 }
 
@@ -348,9 +400,10 @@
     }
     
     if (self.isUpdate) {
-        [ProgressHudHelper showLoadingHudWithText:@"Updating Player..."];
+        [SVProgressHUD showWithStatus:@"Updating Player..."];
     } else {
-        [ProgressHudHelper showLoadingHudWithText:@"Adding Player..."];
+        [SVProgressHUD showWithStatus:@"Adding Player..."];
+        
     }
     
     NSString *action;
@@ -363,11 +416,11 @@
     
     
     if (isSelectedPhoto) {
-        base64 = [UIImagePNGRepresentation(_photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+        base64 = [UIImagePNGRepresentation(photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
     }
     
     
-    
+    NSLog(@"graduateionDate: %@", _graduationDateDDTF.selectedItem);
     NSDictionary* params = @{@"action": action,
                              @"TeamID": [NSString stringWithFormat:@"%d", Global.currentTeamId],
                              @"PlayerID": [NSString stringWithFormat:@"%d", _playerID],
@@ -375,8 +428,8 @@
                              @"FirstName": _firstNameTF.text,
                              @"Grade": _gradeDDTF.selectedItem == nil? @"" : _gradeDDTF.selectedItem,
                              @"Position": selectedPositionStr,
-                             @"BirthDate": _birthdayDDTF.selectedItem == nil? @"" : _birthdayDDTF.selectedItem,
-                             @"GraduationDate": _graduationDateDDTF.selectedItem == nil? @"" : _graduationDateDDTF.selectedItem,
+                             @"BirthDate": [_birthdayDDTF isSelected] ? _birthdayDDTF.selectedItem : @"",
+                             @"GraduationDate": [_graduationDateDDTF isSelected] ? _graduationDateDDTF.selectedItem : @"",
                              @"PEmail": _emailTF.text == nil? @"" : _emailTF.text,
                              @"EmailPRpt": _emailSwitch.on == true ? @"1": @"0",
                              @"MEmail": _momEmailTF.text == nil? @"" : _momEmailTF.text,
@@ -394,10 +447,10 @@
                              @"Sync": @"0"};
     
     [API executeHTTPRequest:Post url:syncToServerServiceURLPlayer parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [self parseResponse:responseDict params:params];
     } ErrorHandler:^(NSString *errorStr) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Something went wrong" message:nil viewController:self];
     }];
 }
@@ -483,12 +536,15 @@
     NSDictionary *playerDic = [teamStats objectAtIndex:0];
     
     // Set Photo
-    NSData *decodedData = [[playerDic valueForKey:@"Photo"] base64Data];
-    if (decodedData) {
-        _photoImgView.image = [UIImage imageWithData:decodedData];
-    }
-    if (!_photoImgView.image) {
-        _photoImgView.image = [UIImage imageNamed:@"avatar"];
+    NSString *photoString = [playerDic valueForKey:@"Photo"];
+    if ([photoString length] > 0) {
+        NSData *decodedData = [photoString base64Data];
+        if (decodedData) {
+            photoImgView.image = [UIImage imageWithData:decodedData];
+        }
+        [photoBtn setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+    } else {
+        [photoBtn setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
     }
     
     _noteTV.text = [playerDic valueForKey:@"Notes"];
@@ -497,14 +553,19 @@
     _lastNameTF.text = [playerDic valueForKey:@"LastName"];
     _gradeDDTF.selectedItem = [playerDic valueForKey:@"Grade"];
     NSString *birthDate = [playerDic valueForKey:@"BirthDate"];
-    
+    if (![birthDate isEqual:[NSNull null]]) {
+        self.birthdayDDTF.date = [birthDate dateWithFormat:@"MM-dd-yyyy"];
+    }
     NSLog(@"Birthdate, %@", birthDate);
     
     
     
-    self.birthdayDDTF.date = [birthDate dateWithFormat:@"MM-dd-yyyy"];
+    
     NSString *graduationDate = [playerDic valueForKey:@"GraduationDate"];
-    self.graduationDateDDTF.date = [graduationDate dateWithFormat:@"MM-dd-yyyy"];
+    if (![graduationDate isEqual:[NSNull null]]) {
+        self.graduationDateDDTF.date = [graduationDate dateWithFormat:@"MM-dd-yyyy"];
+    }
+    
     
     _usernameTF.text = [playerDic valueForKey:@"UserName"];
     _passwordTF.text = [playerDic valueForKey:@"Password"];

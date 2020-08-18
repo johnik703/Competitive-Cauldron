@@ -9,9 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import "RankingCell.h"
+@import Charts;
 
 @interface RankingVC : UIViewController
 
 @property (nonatomic, strong) NSDictionary *dicRanking;
+@property (nonatomic, strong) CombinedChartView *chartView;
 
+@property (nonatomic, strong) Ranking *rankingData;
+@property (nonatomic, strong) UIView *profileView;
 @end

@@ -9,6 +9,7 @@
 #import "CoachListController.h"
 #import "CoachListCell.h"
 #import "EditCoachController.h"
+@import Toast;
 
 @interface CoachListController () <UIGestureRecognizerDelegate, SHMultipleSelectDelegate, MGSwipeTableCellDelegate> {
     
@@ -48,14 +49,29 @@ static NSString *simpleCoachTableIdentifier = @"CoachListCell";
     longPressGr.delegate = self;
     [self.tableView addGestureRecognizer:longPressGr];
     
-    
-    
+    [self showToastForNotice];
 }
 
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [self.view hideToast];
+}
 
-
-
-
+- (void) showToastForNotice {
+    
+    CSToastStyle *style = [[CSToastStyle alloc] initWithDefaultStyle];
+    style.titleAlignment = NSTextAlignmentCenter;
+    style.messageAlignment = NSTextAlignmentCenter;
+    [self.view makeToast:@"Swipe left - Assign a team or Delete Coach."
+                duration:10.0
+                position:CSToastPositionBottom
+                   style:style];
+    [CSToastManager setSharedStyle:style];
+    [CSToastManager setTapToDismissEnabled:YES];
+    
+    // toggle queueing behavior
+    [CSToastManager setQueueEnabled:YES];
+}
 
 - (void)fetchCoachesFromLocalDB {
     
@@ -269,6 +285,8 @@ static NSString *simpleCoachTableIdentifier = @"CoachListCell";
 
 - (BOOL)swipeTableCell:(MGSwipeTableCell *)cell tappedButtonAtIndex:(NSInteger)index direction:(MGSwipeDirection)direction fromExpansion:(BOOL)fromExpansion {
     
+    [self.view hideToast];
+    
     NSIndexPath *indexPath  = [NSIndexPath indexPathForRow:cell.tag inSection:0];
     
     if (index == 0) {
@@ -294,7 +312,7 @@ static NSString *simpleCoachTableIdentifier = @"CoachListCell";
 //        }
 //        
 //    } else {
-//        [Alert showAlert:@"Forbidden!" message:@"You can't delete Coach" viewController:self];
+//        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
 //    }
 //}
 
@@ -450,7 +468,7 @@ static NSString *simpleCoachTableIdentifier = @"CoachListCell";
     
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     
-    UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithTitle:@"Add Coach" style:UIBarButtonItemStylePlain target:self action:@selector(didTapAdd:)];
+    UIBarButtonItem *rightButton = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(didTapAdd:)];;
     self.navigationItem.rightBarButtonItem = rightButton;
     
     if (Global.mode == USER_MODE_INDIVIDUAL || Global.mode == USER_MODE_PLAYER || Global.mode == USER_MODE_COACH) {

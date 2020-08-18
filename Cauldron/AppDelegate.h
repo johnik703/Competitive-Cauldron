@@ -12,8 +12,8 @@
 #import "LeftMenuViewController.h"
 #import "SWRevealViewController.h"
 #import "Signup.h"
-
-@interface AppDelegate : UIResponder <UIApplicationDelegate>{
+#import "ATAppUpdater.h"
+@interface AppDelegate : UIResponder <UIApplicationDelegate, ATAppUpdaterDelegate>{
 }
 
 @property (strong, nonatomic) UIWindow *window;

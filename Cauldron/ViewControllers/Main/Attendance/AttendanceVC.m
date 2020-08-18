@@ -7,6 +7,7 @@
 //
 
 #import "AttendanceVC.h"
+@import LetterAvatarKit;
 
 @interface AttendanceVC () <UITableViewDelegate, UITableViewDataSource, IQDropDownTextFieldDelegate, BEMCheckBoxDelegate> {
     
@@ -43,6 +44,8 @@
     [self fetchTeamData];
     [self fetchDataFromLocalDB];
     [self getAttandaceFromDate:[[NSDate new] stringWithFormat:@"MM-dd-yyyy"]];
+    
+    NSLog(@"current Team id %d: ", Global.currntTeam.TeamID);
 }
 
 - (void)setupNavigationItems {
@@ -50,7 +53,7 @@
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     
     NSString *teamName = Global.currntTeam.Team_Name;
-    self.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Attendence"];
+    self.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Attendance"];
     
 }
 
@@ -78,13 +81,14 @@
         cell = [nib objectAtIndex:0];
     }
     
-    cell.lblName.text = [teamPlayers objectAtIndex:indexPath.row];
+    NSString *username = [teamPlayers objectAtIndex:indexPath.row];
+    cell.lblName.text = username;
     
     // Set Photo
     NSString * str = PlayersInfoArray[indexPath.row][@"Photo"];
     cell.photoImgView.image = [UIImage imageWithData:[str base64Data]];
     if (!cell.photoImgView.image) {
-        cell.photoImgView.image = [UIImage imageNamed:@"avatar"];
+        cell.photoImgView.image = [UIImage lak_makeLetterAvatarWithUsername:username];
     }
     
     // Set CheckBox
@@ -205,7 +209,7 @@
     
     NSLog(@"test attendence, %@ ", selectedRowsArray);
     
-    BOOL success = [SQLiteHelper deleteInTable:@"playerattendance" where:@{@"attendance_date": self.dateDDTF.selectedItem}];
+    BOOL success = [SQLiteHelper deleteInTable:@"playerattendance" where:@{@"attendance_date": self.dateDDTF.selectedItem, @"TeamID": String(Global.currntTeam.TeamID)}];
     BOOL attendenceSuccess = NO;
     
     for (int i = 0; i < selectedRowsArray.count; i++) {
@@ -219,7 +223,9 @@
         
         NSDictionary *temp = [PlayersInfoArray objectAtIndex:[sender tag]];
         NSString *dateStr = [self.dateDDTF.date stringWithFormat:@"MM-dd-yyyy"];
-        NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO playerattendance (TeamID, PlayerID, attendance_date, attendance, add_date, email_reportAdded, sync) VALUES(%d,%d,'%@','%d','%@',%d, %d)",[[temp valueForKey:@"TeamID"] intValue],[[selectedRowsArray objectAtIndex:i] intValue], dateStr, 1, dateStr, self.emailReportSwitch.isOn ? 1 : 0, 1];
+        NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO playerattendance (TeamID, PlayerID, attendance_date, attendance, add_date, email_reportAdded, sync) VALUES(%d,%d,'%@','%d','%@',%d, %d)",Global.currntTeam.TeamID, [[selectedRowsArray objectAtIndex:i] intValue], dateStr, 1, dateStr, self.emailReportSwitch.isOn ? 1 : 0, 1];
+        
+        NSLog(@"attendance query: %@", inserQuery);
         attendenceSuccess = [SCSQLite executeSQL:inserQuery];
         
         if (i == 0) {
@@ -227,8 +233,6 @@
             [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
             [[NSUserDefaults standardUserDefaults] synchronize];
         }
-        
-        NSLog(@"userdefaultsTest");
     }
     if (success) {
         if (attendenceSuccess) {
@@ -263,7 +267,7 @@
 - (void) getAttandaceFromDate:(NSString*)date {
 //    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\" AND sync=1 ",date];
 
-    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\"",date];
+    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\" AND TeamID=%d",date, Global.currntTeam.TeamID];
     NSArray *tempArray = [SCSQLite selectRowSQL:selectQuery];
     
     selectedRowsArray = [[NSMutableArray alloc] init];
@@ -278,7 +282,7 @@
     NSString *dateStr = [self.dateDDTF.date stringWithFormat:@"MM-dd-yyyy"];
 //    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\" AND sync=1", dateStr];
     
-    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\"", dateStr];
+    NSString *selectQuery = [NSString stringWithFormat:@"SELECT PlayerID FROM playerattendance WHERE attendance_date=\"%@\" AND TeamID=%d", dateStr, Global.currntTeam.TeamID];
     
     NSArray *tempArray = [SCSQLite selectRowSQL: selectQuery];
     
@@ -290,18 +294,40 @@
 }
 
 - (void) fetchTeamData {
-    NSString *query = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo WHERE TeamID=%d AND UserLevel=%d ORDER BY LastName, FirstName ASC", Global.currntTeam.TeamID, 3];
-    PlayersInfoArray = [SCSQLite selectRowSQL:query];
-    NSLog(@"All Team Player Are From DataBase: %@",PlayersInfoArray);
-    
+    NSString *query = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo WHERE TeamID=%d AND UserLevel=%d ORDER BY LastName ASC", Global.currntTeam.TeamID, 3];
+    playerInfos = [SCSQLite selectRowSQL:query];
+//    NSLog(@"All Team Player Are From DataBase: %@",PlayersInfoArray);
+    PlayersInfoArray = [[NSMutableArray alloc] init];
     teamPlayers = [[NSMutableArray alloc] init];
-    for (int m = 0; m < PlayersInfoArray.count; m++) {
-        NSString *playerLastName = [NSString stringWithFormat:@"%@",[[PlayersInfoArray objectAtIndex:m]valueForKey:@"LastName"]];
-        NSString *playerFirstName = [NSString stringWithFormat:@"%@",[[PlayersInfoArray objectAtIndex:m]valueForKey:@"FirstName"]];
-        NSString *playerFullName = [NSString stringWithFormat:@"%@ %@",playerLastName,playerFirstName];
+    for (int m = 0; m < playerInfos.count; m++) {
+        NSString *playerLastName = [NSString stringWithFormat:@"%@",[[playerInfos objectAtIndex:m]valueForKey:@"LastName"]];
+        NSString *playerFirstName = [NSString stringWithFormat:@"%@",[[playerInfos objectAtIndex:m]valueForKey:@"FirstName"]];
+        NSString *playerFullName = [NSString stringWithFormat:@"%@ %@", playerLastName, playerFirstName];
+        NSString *graduationDateString = [[playerInfos objectAtIndex:m] valueForKey:@"GraduationDate"];
         
-        [teamPlayers addObject:playerFullName];
+        NSDate *startDate = [Global.currntTeam.SeasonStart dateWithFormat:@"MM-dd-yyyy"];
+        NSDate *endDate = [Global.currntTeam.SeasonEnd dateWithFormat:@"MM-dd-yyyy"];
+        NSDate *graduateDate = nil;
+        if (![graduationDateString isEqual:[NSNull null]]) {
+            graduateDate = [graduationDateString dateWithFormat:@"MM-dd-yyyy"];
+        }
+        BOOL isGraduate = [self isDate:graduateDate inRangeFirstDate:startDate lastDate:endDate];
+        
+        if (!isGraduate) {
+            [teamPlayers addObject:playerFullName];
+            [PlayersInfoArray addObject:[playerInfos objectAtIndex:m]];
+        }
     }
+}
+
+- (BOOL)isDate:(NSDate *)date inRangeFirstDate:(NSDate *)firstDate lastDate:(NSDate *)lastDate {
+    if (date == nil) {
+        return NO;
+    }
+    if ([date compare:lastDate] == NSOrderedDescending) {
+        return NO;
+    }
+    return YES;
 }
 
 @end

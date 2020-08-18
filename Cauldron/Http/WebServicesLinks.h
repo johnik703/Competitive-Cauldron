@@ -33,11 +33,13 @@ extern NSString* const newPlayerEdit;
 extern NSString* const signUpURL;
 extern NSString* const sportsList;
 extern NSString* const postionList;
+extern NSString* const getLoginReport;
 extern NSString* const demoPostionList;
 extern NSString* const rankingReport;
 extern NSString* const editUserProfile;
 extern NSString* const finalRanking;
 extern NSString* const fitnessPassFailRanking;
+extern NSString* const deleteStatsURL;
 // Sending Services
 extern NSString* const syncToServerSendStatsToCoachServiceURL;
 extern NSString* const syncToServerSendAttendenceToCoachServiceURL;

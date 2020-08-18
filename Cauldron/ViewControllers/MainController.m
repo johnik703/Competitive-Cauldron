@@ -18,8 +18,14 @@
 #import "PercentProgressCustomView.h"
 #import "FinalRankingReportVC.h"
 #import "CoachListController.h"
+#import "SARate.h"
 
-@interface MainController () {
+@import SVProgressHUD;
+@import SafariServices;
+
+
+
+@interface MainController () <SFSafariViewControllerDelegate> {
     
     PercentProgressCustomView *percentProgressView;
     
@@ -43,19 +49,42 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     
+    [self setupNavBar];
     [self setMenuTitleAndIconArr];
+    [self setupTeam];
+    [Global loadUserProfileDataInLocal];
+    [self setupCell];
+    [self setupProgressView];
     
-    
+}
 
+- (void) setupProgressView {
+    percentProgressView = [[PercentProgressCustomView alloc] initWithFrame:self.view.frame];
     
+    UIView *keywindow = [UIApplication sharedApplication].keyWindow;
+    [keywindow addSubview:percentProgressView];
+    
+    [percentProgressView setHidden:YES];
+}
+
+- (void) setupCell {
+    if ([[UIDevice currentDevice]userInterfaceIdiom]==UIUserInterfaceIdiomPhone) {
+        [self.tableView registerNib:[UINib nibWithNibName:@"MenuCell" bundle:nil] forCellReuseIdentifier:simpleMenuTableIdentifier];
+    } else {
+        [self.tableView registerNib:[UINib nibWithNibName:@"MenuCell_iPad" bundle:nil] forCellReuseIdentifier:simpleMenuTableIdentifier];
+    }
+}
+
+- (void) setupNavBar {
+    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+}
+
+- (void) setupTeam {
     if (Global.mode == USER_MODE_INDIVIDUAL || Global.mode == USER_MODE_PLAYER) {
         Global.currentTeamId = (int)[[NSUserDefaults standardUserDefaults] integerForKey:@"MASTERTEAMID"];
         NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE TeamID = %d", Global.currentTeamId];
         NSArray *records = [SCSQLite selectRowSQL:query];
-        
-        NSLog(@"teamrecords, %@", records);
         if ([records count] != 0)
             Global.currntTeam = [DataFetcherHelper getCurrentTeamDataFromDict: [records objectAtIndex:0]];
         
@@ -66,28 +95,7 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
             
         }
     }
-    
-    [Global loadUserProfileDataInLocal];
-    
-    if ([[UIDevice currentDevice]userInterfaceIdiom]==UIUserInterfaceIdiomPhone) {
-        [self.tableView registerNib:[UINib nibWithNibName:@"MenuCell" bundle:nil] forCellReuseIdentifier:simpleMenuTableIdentifier];
-    } else {
-        [self.tableView registerNib:[UINib nibWithNibName:@"MenuCell_iPad" bundle:nil] forCellReuseIdentifier:simpleMenuTableIdentifier];
-    }
-    
-//    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    
-    percentProgressView = [[PercentProgressCustomView alloc] initWithFrame:self.view.frame];
-    
-    UIView *keywindow = [UIApplication sharedApplication].keyWindow;
-    [keywindow addSubview:percentProgressView];
-    //    [self.view bringSubviewToFront:percentProgressView];
-    
-    [percentProgressView setHidden:YES];
-    
 }
-
-
 
 - (void)showAlertSubsciptionEnd {
     [Alert showOKCancelAlert:@"Subsciption End" message:@"Do you want to postpone Subsciption?" viewController:self complete:^{
@@ -117,7 +125,7 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
     
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
         
-        cellHeight = 38.0;
+        cellHeight = 45.0;
         
     } else {
         
@@ -132,40 +140,40 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
     
     if (Global.mode == USER_MODE_DEMO) {
         
-//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize"];
-//        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize"];
+        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Player stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize", @"", @"Rate Us"];
+        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize", @"", @"rateUs"];
         
-        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
-        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
+//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
+//        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
         
     } else if (Global.mode == USER_MODE_CLUB) {
-//        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize"];
-//        menuIconStringArr = @[@"edit_profile", @"coach_list", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize"];
+        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Player stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize", @"", @"Rate Us"];
+        menuIconStringArr = @[@"edit_profile", @"coach_list", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize", @"", @"rateUs"];
         
-        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
-        menuIconStringArr = @[@"edit_profile", @"coach_list", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
+//        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
+//        menuIconStringArr = @[@"edit_profile", @"coach_list", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
 
         
     } else if (Global.mode == USER_MODE_INDIVIDUAL || Global.mode == USER_MODE_COACH) {
-//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize"];
-//        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize"];
+        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Player stats", @"Journals", @"Reports", @"Challenges", @"Challenge Category", @"Update Data", @"Synchronize", @"", @"Rate Us"];
+        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"challenge_subcategory", @"callengeCategory", @"update", @"synchronize", @"", @"rateUs"];
         
-        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendence", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
-        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
+//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendance", @"Rankings", @"Final Ranking Report", @"Add stats", @"Journals", @"Reports", @"Update Data", @"Synchronize"];
+//        menuIconStringArr = @[@"edit_profile", @"players", @"attendence", @"ranking", @"final_ranking", @"add_stats", @"newspaper", @"report", @"update", @"synchronize"];
     }
     else if (Global.mode == USER_MODE_PLAYER) {
-        menuTitleArr = @[@"Rankings", @"Journals", @"Reports", @"Final Ranking Report", @"Update Data"];
-        menuIconStringArr = @[@"ranking", @"newspaper", @"report", @"final_ranking", @"update"];
+        menuTitleArr = @[@"Rankings", @"Journals", @"Reports", @"Final Ranking Report", @"Update Data", @"", @"Rate Us"];
+        menuIconStringArr = @[@"ranking", @"newspaper", @"report", @"final_ranking", @"update", @"", @"rateUs"];
     }
 
     
 //    if (Global.mode == 5) {
 //        
-//        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendence", @"Ranking", @"Add stats", @"Journal", @"Att.Report", @"Challenge Category", @"Challenge SubCategory", @"Update Data", @"Synchronize", @"Logout"];
+//        menuTitleArr = @[@"Edit Profile", @"Coach List", @"Roster", @"Attendance", @"Ranking", @"Add stats", @"Journal", @"Att.Report", @"Challenge Category", @"Challenge SubCategory", @"Update Data", @"Synchronize", @"Logout"];
 //        menuIconStringArr = @[@"edit_profile", @"coach_list", @"roster", @"attendence", @"ranking", @"add_stats", @"journal", @"report", @"challenge_category", @"challenge_subcategory", @"update", @"synchronize", @"logout"];
 //        
 //    } else if (Global.mode == USER_MODE_CLUB || Global.mode == USER_MODE_COACH || Global.mode == USER_MODE_INDIVIDUAL) {
-//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendence", @"Ranking", @"Add stats", @"Journal", @"Att.Report", @"Challenge Category", @"Challenge SubCategory", @"Update Data", @"Synchronize", @"Logout"];
+//        menuTitleArr = @[@"Edit Profile", @"Roster", @"Attendance", @"Ranking", @"Add stats", @"Journal", @"Att.Report", @"Challenge Category", @"Challenge SubCategory", @"Update Data", @"Synchronize", @"Logout"];
 //        menuIconStringArr = @[@"edit_profile", @"roster", @"attendence", @"ranking", @"add_stats", @"journal", @"report", @"challenge_category", @"challenge_subcategory", @"update", @"synchronize", @"logout"];
 //    } else if (Global.mode == USER_MODE_PLAYER) {
 //        menuTitleArr = @[@"Ranking", @"Journal", @"Att.Report", @"Update Data", @"Synchronize", @"Logout"];
@@ -204,6 +212,9 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
     
     if ([cell.menuLabel.text  isEqual: @"Synchronize"]) {
         cell.syncCountLabel.text = String(Global.syncCount);
+        if (Global.syncCount < 0) {
+            cell.syncCountLabel.text = @"";
+        }
     } else {
         cell.syncCountLabel.text = @"";
     }
@@ -232,7 +243,7 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
         RosterVC *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"RosterVC"];
         [self.navigationController pushViewController:viewController animated:YES];
         
-    } else if ([item isEqualToString:@"Attendence"]) {
+    } else if ([item isEqualToString:@"Attendance"]) {
         
         AttendanceVC *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"AttendanceVC"];
         [self.navigationController pushViewController:viewController animated:YES];
@@ -246,7 +257,25 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
         FinalRankingReportVC *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"FinalRankingReportVC"];
         [self.navigationController pushViewController:viewController animated:YES];
         
-    } else if ([item isEqualToString:@"Add stats"]) {
+        
+        //safari controller
+        /*
+        NSString *urlString = [NSString stringWithFormat:finalRanking, Global.currntTeam.TeamID, Global.mode, Global.playerIDFinal];
+        
+        NSLog(@"final rank url: %@", urlString);
+        
+        NSURL *url = [[NSURL alloc] initWithString:urlString];
+        
+        NSString *teamName = Global.currntTeam.Team_Name;
+        NSString *title = [NSString stringWithFormat:@"%@-%@", teamName, @"Final Ranking Report"];
+        
+        SFSafariViewController *safariController = [[SFSafariViewController alloc] initWithURL:url];
+        safariController.navigationItem.title = title;
+        safariController.delegate = self;
+        [self.navigationController pushViewController:safariController animated:true];
+         */
+        
+    } else if ([item isEqualToString:@"Player stats"]) {
         
         [self showChallangesOrRanking:NavigationStateChallenge];
         
@@ -285,9 +314,17 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
     } else if ([item isEqualToString:@"Coach List"]) {
         CoachListController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"CoachListController"];
         [self.navigationController pushViewController:viewController animated:YES];
+    } else if ([item isEqualToString:@"Rate Us"]) {
+        [[SARate sharedInstance] promptForRating];
     }
 
     
+}
+
+//MARK: handle safari
+- (void)safariViewControllerDidFinish:(SFSafariViewController *)controller {
+    
+    [self.navigationController popViewControllerAnimated:true];
 }
 
 - (void)showChallangesOrRanking:(NavigationStatus)status {
@@ -324,13 +361,17 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
     UILabel *teamNameLabel = [[UILabel alloc] init];
     NSString *teamName = Global.currntTeam.Team_Name;
     teamNameLabel.text = teamName;
+    [teamNameLabel setTextColor:[UIColor whiteColor]];
+    
     [teamNameLabel setTranslatesAutoresizingMaskIntoConstraints:false];
     
     [containerView addSubview:teamNameLabel];
     
     int nameCharacCount = (int)[teamName length];
     
-    if (Global.currntTeam.Team_Picture && ![Global.currntTeam.Team_Picture isEqualToString:@""]) {
+    BOOL displayTeamPicture = Global.currntTeam.Display_Picture == 1 ? true : false;
+    
+    if (Global.currntTeam.Team_Picture && ![Global.currntTeam.Team_Picture isEqualToString:@""] && displayTeamPicture) {
         teamImageView.image = [UIImage imageWithData:[Global.currntTeam.Team_Picture base64Data]];
         
         teamImageView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -413,24 +454,11 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
 
 - (void)sync {
     // Check more data available for sync
-    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
     
-    NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallangeStat WHERE Sync=%d",1];
-    NSArray *teamPlayersStats = [SCSQLite selectRowSQL:query];
-    
-    
-    NSString *queryAttandance = [NSString stringWithFormat:@"SELECT * FROM playerattendance WHERE sync=%d",1];
-    NSArray *playersAttandace = [SCSQLite selectRowSQL:queryAttandance];
-    
-    NSString *queryJournal = [NSString stringWithFormat:@"SELECT * FROM JournalData WHERE sync=%d",1];
-    NSArray *playersJournal = [SCSQLite selectRowSQL:queryJournal];
-    
-    NSString *queryPlayer = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo WHERE Sync=%d",1];
-    NSArray *playersData = [SCSQLite selectRowSQL:queryPlayer];
-    
-    if (teamPlayersStats.count > 0 || playersAttandace.count > 0 || playersJournal.count > 0 || playersData.count> 0) {
-        NSString *message = @"Are You Sure Want To Sync All Data To Server, Require High Speed Internet Connection" ;
-        [Alert showOKCancelAlert:@"Sync Data!" message:message viewController:self complete:^{
+    if ([self checkIfExistDataToSync]) {
+        NSString *message = @"Are you sure you want to sync?" ;
+        [Alert showOKCancelAlert:@"Sync Data" message:message viewController:self complete:^{
+            syncMode = 0;
             [self syncData];
         } canceled:^{
         }];
@@ -440,8 +468,8 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
 }
 
 - (void) update {
-    NSString *message = @"Are You Sure Want To Update All Data?, This May Take Few Minutes And Require High Speed Internet Connection";
-    [Alert showOKCancelAlert:@"Update Data!" message:message viewController:self complete:^{
+    NSString *message = @"Are you sure you want to update?\nThis may take few minutes and require high speed internet connection.";
+    [Alert showOKCancelAlert:@"Update Data" message:message viewController:self complete:^{
         [self updateData];
     } canceled:^{
     }];
@@ -450,7 +478,6 @@ static NSString *simpleMenuTableIdentifier = @"MenuCell";
 static int syncMode = 0;
 
 - (void) syncData {
-    syncMode = 0;
     
     // check internet connection
     BOOL checkConnection = [RKCommon checkInternetConnection];
@@ -459,9 +486,7 @@ static int syncMode = 0;
         return;
     }
     
-    [ProgressHudHelper showLoadingHudWithText:@"Uploading Data..."];
-    
-//    [percentProgressView showProgress];
+    [SVProgressHUD showWithStatus:@"Uploading Data..."];
     
     SyncToServer  *syncToServer = [[SyncToServer alloc]init];
     syncToServer.delegate = self;
@@ -478,12 +503,7 @@ static int syncMode = 0;
         return;
     }
     
-    // check more data available for sync
-    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-    NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallangeStat WHERE Sync=%d",1];
-    NSArray *teamPlayersStats = [SCSQLite selectRowSQL:query];
-    
-    [ProgressHudHelper showLoadingHudWithText:@"Updating...."];
+    [SVProgressHUD showWithStatus:@"Updating...."];
     
     SyncFromServer *syncFromServer = [[SyncFromServer alloc] init];
     syncFromServer.delegate = self;
@@ -504,24 +524,26 @@ static int syncMode = 0;
 - (void) SyncToServerProcessCompleted {
     
     Global.syncCount = 0;
-    [[NSUserDefaults standardUserDefaults] setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
+    [UserDefaults setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
     [self.tableView reloadData];
     
     [Global.attendenceDateArr removeAllObjects];
-    [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
-    [ProgressHudHelper hideLoadingHud];
+    [UserDefaults setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
+    [UserDefaults synchronize];
     
-    [Alert showAlert:@"Sync Completed!" message:@"All Data Sync Successfully" viewController:self];
+    [SVProgressHUD dismiss];
     
+    [Alert showAlert:@"Sync Completed!" message:@"" viewController:self complete:^{
+        if (syncMode == 3) {
+            [self handleLogout];
+        }
+    }];
 }
 
 
 #pragma Selegate Sync From Server
 
 - (void) syncFromServerProcessCompleted {
-//    [ProgressHudHelper hideLoadingHud];
-    
-    
     
     if (syncMode == 0) {
         NSLog(@"All Sync Process Complete From SERVER For UPDATE");
@@ -539,23 +561,20 @@ static int syncMode = 0;
     [self myMethod:^(BOOL finished) {
             if(finished){
                 NSLog(@"success");
-                [Alert showAlert:@"Sync Completed!" message:@"All Data Sync Successfully" viewController:self];
+                [Alert showAlert:@"Sync Completed!" message:@"" viewController:self];
             }
         }];
-    
-    
 }
 
 -(void) myMethod:(myCompletion) compblock{
     //do stuff
-    [ProgressHudHelper hideLoadingHud];
+    [SVProgressHUD dismiss];
     
     compblock(YES);
 }
 
 -(void)showAlert {
     
-    NSLog(@"endDelay");
     [Alert showAlert:@"Sync Completed!" message:@"All Data Sync Successfully" viewController:self];
 }
 
@@ -567,7 +586,7 @@ static int syncMode = 0;
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
     
     if (recordsFound.count > 0) {
-        NSLog(@"Found Record Details : %@",recordsFound);
+//        NSLog(@"Found Record Details : %@",recordsFound);
         
         if ([[recordsFound objectAtIndex:0]valueForKey:@"Teams"]) {
             NSString *totalTeam=[[recordsFound objectAtIndex:0]valueForKey:@"Teams"];
@@ -583,40 +602,73 @@ static int syncMode = 0;
     return 0;
 }
 
-
+- (BOOL)checkIfExistDataToSync {
+    // Check more data available for sync
+    [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+    
+    NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallangeStat WHERE Sync=%d",1];
+    NSArray *teamPlayersStats = [SCSQLite selectRowSQL:query];
+    
+    
+    NSString *queryAttandance = [NSString stringWithFormat:@"SELECT * FROM playerattendance WHERE sync=%d",1];
+    NSArray *playersAttandace = [SCSQLite selectRowSQL:queryAttandance];
+    
+    NSString *queryJournal = [NSString stringWithFormat:@"SELECT * FROM JournalData WHERE sync=%d",1];
+    NSArray *playersJournal = [SCSQLite selectRowSQL:queryJournal];
+    
+    NSString *queryPlayer = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo WHERE Sync=%d",1];
+    NSArray *playersData = [SCSQLite selectRowSQL:queryPlayer];
+    
+    if (teamPlayersStats.count > 0 || playersAttandace.count > 0 || playersJournal.count > 0 || playersData.count> 0) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
 
 - (void)logout {
     
     [Alert showOKCancelAlert:@"Are you sure you want to logoff?" message:@"" viewController:self complete:^{
-        UINavigationController *nav = [self.storyboard instantiateInitialViewController];
-        [UserDefaults removeObjectForKey:@"ISLOGIN"];
+        // Check more data available for sync
         
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"ONLINE_PREVIOUS_LOG_PASSWORD"];
-        
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"finalID"];
-        [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"finalPass"];
-        
-        
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERID"];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERPASS"];
-        //    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"CHECKBOXSTAT"];
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"finalID"];
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"finalPass"];
-        
-        //    [[NSUserDefaults standardUserDefaults] setObject:@"0" forKey:@"CHECKBOXSTATSTR"];
-        Global.syncCount = 0;
-        [[NSUserDefaults standardUserDefaults] setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
-        
-        [Global.attendenceDateArr removeAllObjects];
-        [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
-        
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        
-        ApplicationDelegate.window.rootViewController = nav;
+        if ([self checkIfExistDataToSync]) {
+            NSString *message = @"You have some data to sync\nDo you want to sync before logging off?" ;
+            [Alert showOKCancelAlert:@"Warning!" message:message viewController:self complete:^{
+                syncMode = 3;
+                [self syncData];
+            } canceled:^{
+                [self handleLogout];
+            }];
+        } else {
+            [self handleLogout];
+        }
     } canceled:nil];
     
     
+}
+
+- (void)handleLogout {
+    UINavigationController *nav = [self.storyboard instantiateInitialViewController];
+    [UserDefaults removeObjectForKey:@"ISLOGIN"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"ONLINE_PREVIOUS_LOG_PASSWORD"];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"] forKey:@"finalID"];
+    [[NSUserDefaults standardUserDefaults] setObject:[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"] forKey:@"finalPass"];
+    
+    
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERID"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SAVEDUSERPASS"];
+    Global.syncCount = 0;
+    [[NSUserDefaults standardUserDefaults] setInteger:Global.syncCount forKey:@"SYNCCOUNT"];
+    
+    [Global.attendenceDateArr removeAllObjects];
+    [[NSUserDefaults standardUserDefaults] setObject:Global.attendenceDateArr forKey:@"ATTENDENCEDATEARR"];
+    
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    ApplicationDelegate.window.rootViewController = nav;
 }
 
                                

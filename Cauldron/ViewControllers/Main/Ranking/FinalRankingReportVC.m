@@ -7,6 +7,7 @@
 //
 
 #import "FinalRankingReportVC.h"
+@import SVProgressHUD;
 
 @interface FinalRankingReportVC () <UIWebViewDelegate, UIScrollViewDelegate>
 
@@ -35,13 +36,6 @@
         playerID=@"&";
     }
     
-    NSData *base64Data = [[NSString stringWithFormat:@"teamID=%d&player=%@print_option=2", Global.currntTeam.TeamID, playerID] dataUsingEncoding:NSUTF8StringEncoding];
-    
-    NSString *base64=[base64Data base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-    NSString *finalBase64=[[base64 dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-    
-    NSLog(@"final base 64 %@",finalBase64);
-    
     self.webView.delegate = self;
 //    self.webView.scrollView.delegate = self;
     self.webView.scalesPageToFit=TRUE;
@@ -53,7 +47,9 @@
     
     NSLog(@"finalRankingUrl, %@---end", url);
     
-    [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    
+    [self.webView loadRequest:request];
     self.webView.scrollView.bounces = TRUE;
 }
 
@@ -65,23 +61,24 @@
 #pragma mark - WebViewDelegate
 
 - (void)webViewDidStartLoad:(UIWebView *)webView {
-    [ProgressHudHelper showLoadingHudWithText:@"Loading..."];
+    [SVProgressHUD showWithStatus:@"Loading..."];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView {
 
-    [ProgressHudHelper hideLoadingHud];
+    [SVProgressHUD dismiss];
     
 }
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
-    [ProgressHudHelper hideLoadingHud];
+    
+    [SVProgressHUD dismiss];
     BOOL activeConn = [RKCommon checkInternetConnection];
     
     if (activeConn == NO) {
         [Alert showAlert:@"Connection Error" message:@"No Active Connection Found" viewController:self];
     } else {
-        [Alert showAlert:@"Failed to load page" message:@"Try again later" viewController:self];
+        [Alert showAlert:@"The request timed out." message:@"Try again later." viewController:self];
     }
     
 }

@@ -8,6 +8,8 @@
 
 #import "RosterVC.h"
 #import "RosterHeaderCell.h"
+@import LetterAvatarKit;
+@import SVProgressHUD;
 
 @interface RosterVC () <UIGestureRecognizerDelegate, AddPlayerDelegate>
 
@@ -118,18 +120,16 @@ static NSString *RosterHeaderViewIdentifier_iPad = @"RosterHeaderCell_iPad";
     }
     
     cell.lblJourcyNo.text=[NSString stringWithFormat:@"%@",tempObj.jercyNo];
-    cell.lblName.text=[NSString stringWithFormat:@"%@ %@",tempObj.FirstName,tempObj.LastName];
+    
+    NSString *username = [NSString stringWithFormat:@"%@ %@",tempObj.LastName,tempObj.FirstName];
+    cell.lblName.text= username;
     
     NSData *decodedData = [tempObj.Photo base64Data];
-    if ([tempObj.Photo isEqualToString:@" "] || tempObj.Photo==Nil) {
-        cell.imgPlayer.image = [UIImage imageNamed:@"avatar"];
+    if ([tempObj.Photo isEqualToString:@""] || tempObj.Photo==Nil) {
+        cell.imgPlayer.image = [UIImage lak_makeLetterAvatarWithUsername:username];
     } else {
         UIImage* image = [UIImage imageWithData:decodedData];
         cell.imgPlayer.image = image;
-    }
-    
-    if (cell.imgPlayer.image == nil) {
-        cell.imgPlayer.image = [UIImage imageNamed:@"avatar"];
     }
     
     return cell;
@@ -269,7 +269,7 @@ static NSString *RosterHeaderViewIdentifier_iPad = @"RosterHeaderCell_iPad";
 -(void)createJsonStringsArrayPlayer {
     [arrPlayerDetail removeAllObjects];
     [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-    NSString *query = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo where TeamID=%d",Global.currentTeamId];
+    NSString *query = [NSString stringWithFormat:@"SELECT * FROM PlayersInfo where TeamID=%d ORDER BY LastName ASC",Global.currentTeamId];
     NSArray *teamStats = [SCSQLite selectRowSQL:query];
     
     for (int i = 0; i < [teamStats count]; i++) {
@@ -300,21 +300,31 @@ static NSString *RosterHeaderViewIdentifier_iPad = @"RosterHeaderCell_iPad";
         
         NSDate *startDate = [Global.currntTeam.SeasonStart dateWithFormat:@"MM-dd-yyyy"];
         NSDate *endDate = [Global.currntTeam.SeasonEnd dateWithFormat:@"MM-dd-yyyy"];
-        NSDate *graduateDate = [objPlayer.GraduationDate dateWithFormat:@"MM-dd-yyyy"];
+        NSDate *graduateDate = nil;
+        if (![objPlayer.GraduationDate isEqual:[NSNull null]]) {
+            graduateDate = [objPlayer.GraduationDate dateWithFormat:@"MM-dd-yyyy"];
+        }
         
         BOOL isGraduate = [self isDate:graduateDate inRangeFirstDate:startDate lastDate:endDate];
         
-        if (isGraduate == false) {
+        NSLog(@"player: %@", objPlayer);
+        
+        if (!isGraduate) {
             [arrPlayerDetail addObject:objPlayer];
         }
-
-        
-        
     }
 }
 
 - (BOOL)isDate:(NSDate *)date inRangeFirstDate:(NSDate *)firstDate lastDate:(NSDate *)lastDate {
-    return [date compare:firstDate] == NSOrderedAscending;
+    
+    if (date == nil) {
+        return NO;
+    }
+    
+    if ([date compare:lastDate] == NSOrderedDescending) {
+        return NO;
+    }
+    return YES;
 }
 
 

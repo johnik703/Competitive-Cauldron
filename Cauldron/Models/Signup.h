@@ -41,6 +41,7 @@
 @property(nonatomic, retain) NSString *schedualEmail;
 
 //CheckBoxes value
+@property(nonatomic, assign) int emailCoachRanking;
 @property(nonatomic, assign) int sportsID;
 @property(nonatomic, assign) BOOL isDisplayPic;
 @property(nonatomic, assign) BOOL isActivate;

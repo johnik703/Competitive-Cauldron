@@ -62,7 +62,7 @@
     NSString *countValue = [NSString stringWithFormat:@"%@",[progressCount.userInfo objectForKey:PROGRESS_VALUE]];
     NSString *totalCount = [NSString stringWithFormat:@"%@",[progressCount.userInfo objectForKey:TOTAL_VALUE]];
     
-    NSLog(@"countvalue--%@, totalcount--%@", countValue, totalCount);
+//    NSLog(@"countvalue--%@, totalcount--%@", countValue, totalCount);
     
     
     
@@ -70,7 +70,7 @@
     float progressValue = (float)finalCountValue/[totalCount integerValue];
     float percentageValue = (100 * finalCountValue)/[totalCount integerValue];
     
-    NSLog(@"progressValu---%f, percentvalue--%f", progressValue, percentageValue);
+//    NSLog(@"progressValu---%f, percentvalue--%f", progressValue, percentageValue);
     
     if ([countValue isEqualToString:@"0"]) {
         [progressView setProgressTintColor:[UIColor whiteColor]];

@@ -18,6 +18,10 @@
 - (void)scoreTextFieldDidEndEditing:(UITextField *)textField;
 @end
 
+@protocol ScoreTableViewCellDelegate
+- (void)handleLongPressGesture: (UILongPressGestureRecognizer *) gesture atCell: (UITableViewCell *) cell;
+@end
+
 @interface ScoreTableViewCell : UITableViewCell <UITextFieldDelegate> {
     
     @public
@@ -27,11 +31,13 @@
 @property (strong, nonatomic) NSMutableArray *subViewsArr;
 
 @property (weak, nonatomic) IBOutlet UILabel *titleLbl;
+@property (weak, nonatomic) IBOutlet BEMCheckBox *deleteCheckBox;
 @property (strong, nonatomic) IBOutlet UIStackView *stackView;
 
 - (void) initUIWithItems:(NSArray *)items values:(NSArray *)values isDecimal:(int )isDecimal index:(NSInteger)index;
 - (NSString *) getValues;
 
 @property (weak, nonatomic) id<ScoreTextFieldDelegate> scoreDelegate;
+@property (weak, nonatomic) id<ScoreTableViewCellDelegate> delegate;
 
 @end

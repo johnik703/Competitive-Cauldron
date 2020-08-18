@@ -55,4 +55,23 @@
     [viewController presentViewController:alert animated:true completion:nil];
 }
 
++ (void) showYesNoAlert:(NSString *)title message:(NSString *)message viewController:(UIViewController *)viewController complete:(AlertCompleteHandler)okHandler canceled:(AlertCompleteHandler)canceledHandler {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        if (okHandler != nil) {
+            okHandler();
+        }
+    }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        if (canceledHandler != nil) {
+            canceledHandler();
+        }
+    }];
+    
+    [alert addAction:okAction];
+    [alert addAction:cancelAction];
+    
+    [viewController presentViewController:alert animated:true completion:nil];
+}
+
 @end

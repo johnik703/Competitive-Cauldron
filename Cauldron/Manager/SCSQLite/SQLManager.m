@@ -61,7 +61,7 @@
                              
                              if(success)
                              {
-                                 NSLog(@"SuccessFully Inserted ID = %d",aPlayer.PlayerID);
+//                                 NSLog(@"SuccessFully Inserted ID = %d",aPlayer.PlayerID);
                              }
                          }
                       }
@@ -128,7 +128,7 @@
                               
                               if(success)
                               {
-                                  NSLog(@"SuccessFully Inserted ID = %d",aTeam.TeamID);
+//                                  NSLog(@"SuccessFully Inserted ID = %d",aTeam.TeamID);
                               }
                               
                         }

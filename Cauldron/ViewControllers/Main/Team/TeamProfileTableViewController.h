@@ -35,6 +35,7 @@
 @property (assign, nonatomic) TeamState navigationTeamStatus;
 
 @property (weak, nonatomic) IBOutlet UIImageView *photoImgView;
+@property (weak, nonatomic) IBOutlet UIButton *addPictureButton;
 @property (weak, nonatomic) IBOutlet UITextField *yearTF;
 @property (weak, nonatomic) IBOutlet UITextField *teamNameTF;
 @property (weak, nonatomic) IBOutlet IQDropDownTextField *seasonStartsDDTF;
@@ -51,6 +52,7 @@
 @property (weak, nonatomic) IBOutlet UISwitch *hightlightBestRankingSC;
 @property (weak, nonatomic) IBOutlet UISwitch *bulkDataEntrySC;
 @property (weak, nonatomic) IBOutlet UISwitch *fitnessPassFailReportSC;
+@property (weak, nonatomic) IBOutlet UISwitch *displayTeamPictureSwitch;
 
 @property (strong, nonatomic) IBOutlet UISegmentedControl *timeIntervalSC;
 @property (weak, nonatomic) IBOutlet IQDropDownTextField *timeDDTF;

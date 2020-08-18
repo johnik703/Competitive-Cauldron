@@ -15,8 +15,13 @@ PODS:
   - AFNetworking/UIKit (3.1.0):
     - AFNetworking/NSURLSession
   - BEMCheckBox (1.4.0)
+  - Charts (3.0.5):
+    - Charts/Core (= 3.0.5)
+  - Charts/Core (3.0.5)
+  - HMSegmentedControl (1.5.4)
   - IQDropDownTextField (1.1.0)
-  - IQKeyboardManager (4.0.9)
+  - IQKeyboardManagerSwift (6.0.4)
+  - LetterAvatarKit (1.1.2)
   - LGSideMenuController (2.0.9)
   - MGSwipeTableCell (1.5.6)
   - MZAppearance (1.1.6)
@@ -24,31 +29,65 @@ PODS:
     - MZAppearance
   - SHMultipleSelect (0.2.2)
   - SkyFloatingLabelTextField (2.0.1)
+  - SVProgressHUD (2.2.5)
+  - Toast (4.0.0)
+  - Toast-Swift (3.0.1)
 
 DEPENDENCIES:
   - AFNetworking (~> 3.0)
   - BEMCheckBox
+  - Charts
+  - HMSegmentedControl
   - IQDropDownTextField
-  - IQKeyboardManager
+  - IQKeyboardManagerSwift (= 6.0.4)
+  - LetterAvatarKit
   - LGSideMenuController
   - MGSwipeTableCell
   - MZAppearance
   - MZFormSheetPresentationController
   - SHMultipleSelect (~> 0.2.2)
   - SkyFloatingLabelTextField (~> 2.0.0)
+  - SVProgressHUD
+  - Toast (~> 4.0.0)
+  - Toast-Swift
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AFNetworking
+    - BEMCheckBox
+    - Charts
+    - HMSegmentedControl
+    - IQDropDownTextField
+    - IQKeyboardManagerSwift
+    - LetterAvatarKit
+    - LGSideMenuController
+    - MGSwipeTableCell
+    - MZAppearance
+    - MZFormSheetPresentationController
+    - SHMultipleSelect
+    - SkyFloatingLabelTextField
+    - SVProgressHUD
+    - Toast
+    - Toast-Swift
 
 SPEC CHECKSUMS:
   AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
   BEMCheckBox: e18e4a148905b290bd03d98b767651c104f4eda3
+  Charts: 45cdc985b764c838b35ee47eb1365d15735f6d1a
+  HMSegmentedControl: b25bc4ec44766e073d62c473188fb354ee244b76
   IQDropDownTextField: 614f79ca905529c992045eaa112d0fc9ebb875d1
-  IQKeyboardManager: 322c7405df3eb5f7e50dede32ea937bf3d4364e0
+  IQKeyboardManagerSwift: 36dbe324b4f9793f5f41ba5227f3e7c76dfefd50
+  LetterAvatarKit: 50af51c201d935dd868c7e53db5b7b0ef57297cf
   LGSideMenuController: 14299cd8a1c6f4c41848baf3352df9acb41165f8
   MGSwipeTableCell: 616700eb0ffd1c611ba909066cb7fd739790a0a7
   MZAppearance: 0c06d3fa9cc55142f1da14bc8631fbe8fd6e19d5
   MZFormSheetPresentationController: c1dc3bce639d2393b3cc416fcb6e050eb5bca062
   SHMultipleSelect: 751491f4de21614622c198a760a88272cab62bf3
   SkyFloatingLabelTextField: 070e749632ffd608d6fd9db3fa488a822524997c
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
+  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
+  Toast-Swift: ba0b01b095aada709d915f9beb1d38184a2721c3
 
-PODFILE CHECKSUM: a68c8dc5048f0eb11e42d2a82a0ae113aee0e7f3
+PODFILE CHECKSUM: 85df52b975762700914e8198786078fb5ea918e6
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.5.3

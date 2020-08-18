@@ -9,7 +9,9 @@
 #import "JournalVC.h"
 
 
-@interface JournalVC () <UITableViewDelegate, UITableViewDataSource, AddJournalVCDelegate, IQDropDownTextFieldDelegate>
+@interface JournalVC () <UITableViewDelegate, UITableViewDataSource, AddJournalVCDelegate, IQDropDownTextFieldDelegate> {
+    NSArray *allJournals;
+}
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @end
 
@@ -31,61 +33,51 @@
     _toDDTF.delegate = self;
     
     arrJournalData = [[NSMutableArray alloc] init];
-    NSString *getUserLevel = UDGetString(@"USERLEVEL");
     playerID = Global.playerIDFinal;
     
-//    if ([getUserLevel isEqualToString:@"3"]) {
-//        arrJournalData = [self getJournalDataFromServer:[NSString stringWithFormat:journalDataURL, Global.currntTeam.TeamID, [playerID intValue]]];
-//        
-//        for (int m = 0; m < arrJournalData.count; m++) {
-//            NSString *notesQuery = [NSString stringWithFormat:@"SELECT notes FROM JournalData WHERE  id ='%@'" ,[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"id"]]];
-//            NSArray *tempArray = [SCSQLite selectRowSQL:notesQuery];
-//            if ([tempArray count] == 0) {
-//                [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-//                NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO JournalData (id,TeamID,PlayerID,notes,add_date,sync) VALUES(%d,%d,%d,'%@','%@',%d)",[[[arrJournalData objectAtIndex:m]valueForKey:@"id"] intValue], Global.currntTeam.TeamID,[[[arrJournalData objectAtIndex:m]valueForKey:@"PlayerID"] intValue],[[arrJournalData objectAtIndex:m]valueForKey:@"notes"],[[arrJournalData objectAtIndex:m]valueForKey:@"add_date"],0];
-//                [SCSQLite executeSQL:inserQuery];
-//            }
-//        }
-//    } else {
-//        arrJournalData = [self getJournalDataFromServer:[NSString stringWithFormat:journalTeamDataURL, Global.currntTeam.TeamID]];
-//        
-//        for (int m = 0; m < arrJournalData.count; m++) {
-//            NSString *notesQuery = [NSString stringWithFormat:@"SELECT notes FROM JournalData WHERE  id ='%@' And notes = '%@' " ,[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"id"]],[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"notes"]]];
-//            NSArray *tempArray = [SCSQLite selectRowSQL:notesQuery];
-//            if (tempArray.count == 0) {
-//                [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-//                NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO JournalData (id,TeamID,PlayerID,notes,add_date,sync) VALUES(%d,%d,%d,'%@','%@',%d)",[[[arrJournalData objectAtIndex:m]valueForKey:@"id"] intValue],Global.currntTeam.TeamID,[[[arrJournalData objectAtIndex:m]valueForKey:@"PlayerID"] intValue],[[arrJournalData objectAtIndex:m]valueForKey:@"notes"],[[arrJournalData objectAtIndex:m]valueForKey:@"add_date"],0];
-//                [SCSQLite executeSQL:inserQuery];
-//            }
-//        }
-//    }
+    // old method to get journals
+    /*
+    NSString *getUserLevel = UDGetString(@"USERLEVEL");
+    if ([getUserLevel isEqualToString:@"3"]) {
+        arrJournalData = [self getJournalDataFromServer:[NSString stringWithFormat:journalDataURL, Global.currntTeam.TeamID, [playerID intValue]]];
+        
+        for (int m = 0; m < arrJournalData.count; m++) {
+            NSString *notesQuery = [NSString stringWithFormat:@"SELECT notes FROM JournalData WHERE  id ='%@'" ,[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"id"]]];
+            NSArray *tempArray = [SCSQLite selectRowSQL:notesQuery];
+            if ([tempArray count] == 0) {
+                [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+                NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO JournalData (id,TeamID,PlayerID,notes,add_date,sync) VALUES(%d,%d,%d,'%@','%@',%d)",[[[arrJournalData objectAtIndex:m]valueForKey:@"id"] intValue], Global.currntTeam.TeamID,[[[arrJournalData objectAtIndex:m]valueForKey:@"PlayerID"] intValue],[[arrJournalData objectAtIndex:m]valueForKey:@"notes"],[[arrJournalData objectAtIndex:m]valueForKey:@"add_date"],0];
+                [SCSQLite executeSQL:inserQuery];
+            }
+        }
+    } else {
+        arrJournalData = [self getJournalDataFromServer:[NSString stringWithFormat:journalTeamDataURL, Global.currntTeam.TeamID]];
+        
+        for (int m = 0; m < arrJournalData.count; m++) {
+            NSString *notesQuery = [NSString stringWithFormat:@"SELECT notes FROM JournalData WHERE  id ='%@' And notes = '%@' " ,[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"id"]],[NSString stringWithFormat:@"%@",[[arrJournalData objectAtIndex:m] valueForKey:@"notes"]]];
+            NSArray *tempArray = [SCSQLite selectRowSQL:notesQuery];
+            if (tempArray.count == 0) {
+                [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+                NSString *inserQuery = [NSString stringWithFormat:@"INSERT INTO JournalData (id,TeamID,PlayerID,notes,add_date,sync) VALUES(%d,%d,%d,'%@','%@',%d)",[[[arrJournalData objectAtIndex:m]valueForKey:@"id"] intValue],Global.currntTeam.TeamID,[[[arrJournalData objectAtIndex:m]valueForKey:@"PlayerID"] intValue],[[arrJournalData objectAtIndex:m]valueForKey:@"notes"],[[arrJournalData objectAtIndex:m]valueForKey:@"add_date"],0];
+                [SCSQLite executeSQL:inserQuery];
+            }
+        }
+    }
+     */
 }
 
 - (void)setupNavigationItems {
     
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
     NSString *teamName = Global.currntTeam.Team_Name;
-//    if (Global.mode == USER_MODE_PLAYER) {
-//        self.navigationItem.rightBarButtonItem = nil;
-//    }
     self.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Journals"];
     
 }
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self fetchAlljournals];
     [self fetchDataFromLocalDB];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-#pragma mark - AddJournalVCDelegate
-
-- (void) didDisappear {
-//    [self fetchDataFromLocalDB];
 }
 
 #pragma mark - IQDropDownTextFieldDelegate
@@ -120,7 +112,6 @@
     NSString *playerFullName = [NSString stringWithFormat:@"%@ %@",playerLastName,playerFirstName];
     
     cell.playNameLabel.text = playerFullName;
-//    cell.playNameLabel.text = @"TEst";
     cell.journalLabel.text = [[arrJournalData objectAtIndex:indexPath.row]valueForKey:@"notes"];
     
     return cell;
@@ -149,27 +140,29 @@
     
     [self.navigationController pushViewController:viewController animated:true];
     
+    //it's needed later
+    /*
+        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
+        MZFormSheetPresentationViewController *formSheetController = [[MZFormSheetPresentationViewController alloc] initWithContentViewController:navigationController];
     
-    //    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
-    //    MZFormSheetPresentationViewController *formSheetController = [[MZFormSheetPresentationViewController alloc] initWithContentViewController:navigationController];
+     Set size
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.8, ScreenHeight * 0.8);
+    } else if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.7, ScreenHeight * 0.7);
+    }
     
-    // Set size
-//    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
-//        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.8, ScreenHeight * 0.8);
-//    } else if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-//        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.7, ScreenHeight * 0.7);
-//    }
-//    
-//    formSheetController.presentationController.shouldDismissOnBackgroundViewTap = YES;
-//    formSheetController.contentViewControllerTransitionStyle = MZFormSheetPresentationTransitionStyleFade;
-//    
-//    __weak MZFormSheetPresentationViewController *weakController = formSheetController;
-//    formSheetController.willPresentContentViewControllerHandler = ^(UIViewController *a) {
-//        weakController.contentViewCornerRadius = 5.0;
-//        weakController.shadowRadius = 6.0;
-//    };
+    formSheetController.presentationController.shouldDismissOnBackgroundViewTap = YES;
+    formSheetController.contentViewControllerTransitionStyle = MZFormSheetPresentationTransitionStyleFade;
     
-//    [self presentViewController:formSheetController animated:YES completion:nil];
+    __weak MZFormSheetPresentationViewController *weakController = formSheetController;
+    formSheetController.willPresentContentViewControllerHandler = ^(UIViewController *a) {
+        weakController.contentViewCornerRadius = 5.0;
+        weakController.shadowRadius = 6.0;
+    };
+    
+    [self presentViewController:formSheetController animated:YES completion:nil];
+     */
 }
 
 - (CGFloat) tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
@@ -178,6 +171,20 @@
 
 #pragma mark - IBActions
 
+- (IBAction)handleTodayJournal:(id)sender {
+    NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM-dd-yyyy"];
+    
+    NSString *startDateStr = [dateFormatter stringFromDate:[NSDate date]];
+    NSString *endDateStr = [dateFormatter stringFromDate:[NSDate date]];
+    self.fromDDTF.date = [startDateStr dateWithFormat:@"MM-dd-yyyy"];
+    self.toDDTF.date = [endDateStr dateWithFormat:@"MM-dd-yyyy"];
+    
+    arrJournalData = [[NSMutableArray alloc] initWithArray:allJournals];
+    
+    arrJournalData = [self getFilteredJournals:startDateStr andEndDate:endDateStr];
+    [self.tableView reloadData];
+}
 - (IBAction)didTapAddJournal:(id)sender {
     
     AddJournalVC *viewController = (AddJournalVC *)[self.storyboard instantiateViewControllerWithIdentifier:@"AddJournalVC"];
@@ -185,25 +192,28 @@
     viewController.delegate = self;
     [self.navigationController pushViewController:viewController animated:true];
     
-//    MZFormSheetPresentationViewController *formSheetController = [[MZFormSheetPresentationViewController alloc] initWithContentViewController:navigationController];
+    // this will be implemented later
+    /*
+    MZFormSheetPresentationViewController *formSheetController = [[MZFormSheetPresentationViewController alloc] initWithContentViewController:navigationController];
     
-    // Set size
-//    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
-//        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.8, ScreenHeight * 0.8);
-//    } else if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-//        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.7, ScreenHeight * 0.7);
-//    }
-//    
-//    formSheetController.presentationController.shouldDismissOnBackgroundViewTap = YES;
-//    formSheetController.contentViewControllerTransitionStyle = MZFormSheetPresentationTransitionStyleFade;
-//    
-//    __weak MZFormSheetPresentationViewController *weakController = formSheetController;
-//    formSheetController.willPresentContentViewControllerHandler = ^(UIViewController *a) {
-//        weakController.contentViewCornerRadius = 5.0;
-//        weakController.shadowRadius = 6.0;
-//    };
-//    
-//    [self presentViewController:formSheetController animated:YES completion:nil];
+     Set size
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.8, ScreenHeight * 0.8);
+    } else if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        formSheetController.presentationController.contentViewSize = CGSizeMake(ScreenWidth * 0.7, ScreenHeight * 0.7);
+    }
+    
+    formSheetController.presentationController.shouldDismissOnBackgroundViewTap = YES;
+    formSheetController.contentViewControllerTransitionStyle = MZFormSheetPresentationTransitionStyleFade;
+    
+    __weak MZFormSheetPresentationViewController *weakController = formSheetController;
+    formSheetController.willPresentContentViewControllerHandler = ^(UIViewController *a) {
+        weakController.contentViewCornerRadius = 5.0;
+        weakController.shadowRadius = 6.0;
+    };
+    
+    [self presentViewController:formSheetController animated:YES completion:nil];
+     */
 }
 
 #pragma mark - DB Methods
@@ -225,41 +235,38 @@
     }
 }
 
-- (void) fetchDataFromLocalDB {
+- (void) fetchAlljournals {
+    NSString *selectQuery;
+    NSString *getUserLevel = [[NSUserDefaults standardUserDefaults] stringForKey:@"USERLEVEL"];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    if ([getUserLevel isEqualToString:@"3"]) {
+        selectQuery = [NSString stringWithFormat:@"SELECT PlayerID,notes,id,add_date FROM JournalData WHERE TeamID = '%d' AND  PlayerID ='%@'", Global.currntTeam.TeamID ,Global.playerIDFinal];
+    } else {
+        selectQuery = [NSString stringWithFormat:@"SELECT PlayerID,notes,id,add_date FROM JournalData WHERE TeamID = '%d'", Global.currntTeam.TeamID ];
+    }
+    
+    allJournals = [SCSQLite selectRowSQL:selectQuery];
+    NSLog(@"journal data %@",allJournals);
+}
+
+- (void) fetchDataFromLocalDB {
         
-        NSString *selectQuery;
-        NSString *getUserLevel = [[NSUserDefaults standardUserDefaults] stringForKey:@"USERLEVEL"];
+        arrJournalData = [[NSMutableArray alloc] initWithArray:allJournals];
         
-        if ([getUserLevel isEqualToString:@"3"]) {
-            selectQuery = [NSString stringWithFormat:@"SELECT PlayerID,notes,id,add_date FROM JournalData WHERE TeamID = '%d' AND  PlayerID ='%@'", Global.currntTeam.TeamID ,Global.playerIDFinal];
-        } else {
-            selectQuery = [NSString stringWithFormat:@"SELECT PlayerID,notes,id,add_date FROM JournalData WHERE TeamID = '%d'", Global.currntTeam.TeamID ];
+        arrJournalData = [self getFilteredJournals:[_fromDDTF.date stringWithFormat:@"MM-dd-yyyy"] andEndDate:[_toDDTF.date stringWithFormat:@"MM-dd-yyyy"]];
+        [self.tableView reloadData];
+}
+
+- (NSMutableArray *) getFilteredJournals: (NSString *)beginDate andEndDate: (NSString *)endDate {
+    NSMutableArray *arrFilterData=[[NSMutableArray alloc] init];
+    for (int i = 0; i < arrJournalData.count; i++) {
+        NSDictionary *dic=[arrJournalData objectAtIndex:i];
+        if ([self date:[dic valueForKey:@"add_date"] isBetweenDate: beginDate andDate:endDate]) {
+            [arrFilterData addObject:dic];
         }
         
-        NSArray *tempArray = [SCSQLite selectRowSQL:selectQuery];
-        NSLog(@"journal data %@",arrJournalData);
-        
-        if (tempArray.count >= arrJournalData.count) {
-            arrJournalData = [[NSMutableArray alloc] initWithArray:tempArray];
-//            [_tableView reloadData];
-        }
-        
-        NSMutableArray *arrFilterData=[[NSMutableArray alloc] init];
-        for (int i = 0; i < arrJournalData.count; i++) {
-            NSDictionary *dic=[arrJournalData objectAtIndex:i];
-            if ([self date:[dic valueForKey:@"add_date"] isBetweenDate:[_fromDDTF.date stringWithFormat:@"MM-dd-yyyy"] andDate:[_toDDTF.date stringWithFormat:@"MM-dd-yyyy"]]) {
-                [arrFilterData addObject:dic];
-            }
-            
-        }
-        arrJournalData = arrFilterData;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.tableView reloadData];
-        });
-    });
+    }
+    return arrFilterData;
 }
 
 - (BOOL) date:(NSString*)date isBetweenDate:(NSString*)beginDate andDate:(NSString*)endDate {

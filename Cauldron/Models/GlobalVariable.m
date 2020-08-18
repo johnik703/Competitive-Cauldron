@@ -9,7 +9,7 @@
 #import "GlobalVariable.h"
 
 @implementation GlobalVariable
-@synthesize objSignUp, teamSportID, currntTeam, currentTeamId, currentChallenge, currendCategoryArr, masterTeamId, syncCount, attendenceSyncCount, attendenceDateArr;
+@synthesize objSignUp, teamSportID, currntTeam, currentTeamId, currentChallenge, currendCategoryArr, masterTeamId, syncCount, attendenceSyncCount, attendenceDateArr, teamIdsForWhere;
 
 static GlobalVariable *singleton = nil;
 
@@ -43,7 +43,7 @@ static GlobalVariable *singleton = nil;
     NSArray *records = [SCSQLite selectRowSQL:sprtsTypeQuery];
     
     if (records.count > 0) {
-        NSLog(@"records  %@",records);
+//        NSLog(@"records  %@",records);
         
         objSignUp.userlevel = [[records objectAtIndex:0]valueForKey:@"userLevel"];
         objSignUp.sports = [[records objectAtIndex:0]valueForKey:@"Sports"];
@@ -87,7 +87,7 @@ static GlobalVariable *singleton = nil;
         objSignUp.zip = [[records objectAtIndex:0]valueForKey:@"contact_zip"];
         objSignUp.contactEmail = [[records objectAtIndex:0]valueForKey:@"contact_email"];
         objSignUp.contactPhone = [[records objectAtIndex:0]valueForKey:@"contact_phone"];
-        
+        objSignUp.emailCoachRanking = (int)[[[records objectAtIndex:0] valueForKey:@"emailCoachRanking"] integerValue];
         NSDateFormatter *formatter2 = [[NSDateFormatter alloc] init];
         [formatter2 setDateFormat:@"hh:mm:ss"];
         [formatter2 setTimeZone:[NSTimeZone timeZoneWithName:@"..."]];

@@ -150,20 +150,7 @@
         
         if (i == [JsonStringArray count] -1) {
             
-            
-            
-            
-//            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonStatsArray options:NSJSONWritingPrettyPrinted error:nil];
-//            NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-            
-            
-//            NSURLConnection *requestConnectionStats = [[NSURLConnection alloc]initWithRequest:[self sendRequestWithURL:syncToServerSendStatsToCoachServiceURL withJsonString:jsonString] delegate:self];
-//            [self sendRequestWithURL:syncToServerSendStatsToCoachServiceURL withJsonString:jsonString];
             NSString *jsonString = [jsonStatsArray componentsJoinedByString:@"?"];
-            
-//            NSString * testUrl = @"http://competi1.wwwls7.a2hosted.com/stats/web_service/sendstatstocoach.php";
-//            NSString *url = [NSString stringWithFormat:syncToServerSendStatsToCoachServiceURL, jsonString];
-  //          NSDictionary *dictionary = [JSONHelper loadJSONDataFromURLForSync:url];
             
             
             NSDictionary* params = @{@"data": jsonString,
@@ -177,13 +164,6 @@
                 
 //                NSLog(@"errorStr ---%@", errorStr);
             }];
-            
-            
-            
- //           NSLog(@"statsurl for stats sync, %@", url);
-   //         NSLog(@"statsurl for stats syncDictionary, %@", dictionary);
-//            NSLog(@"statsJsonString for stats sync, %@", jsonString);
-//            NSLog(@"statsDictionary for stats sync, %@", dictionary);
         }
         
         if(requestConnection)
@@ -211,7 +191,7 @@
             
             [API executeHTTPRequest:Post url:syncToServerSendAttendenceToCoachServiceURL parameters:params CompletionHandler:^(NSDictionary *responseDict) {
                 
-//                                [self parseResponse:responseDict params:params ];
+                                [self parseResponse:responseDict params:params ];
             } ErrorHandler:^(NSString *errorStr) {
                 
 //                                NSLog(@"errorStr ---%@", errorStr);
@@ -341,28 +321,23 @@
         int insertedID =(int) [[[responseDict objectAtIndex:0]valueForKey:@"ID"] integerValue];
         NSString *successReult = [[responseDict objectAtIndex:0]valueForKey:@"Result"];
         NSString *typeReultChal = [[responseDict objectAtIndex:0]valueForKey:@"Type"];
-        
-//        int insertedID =(int) [[responseDict valueForKey:@"ID"] integerValue];
-//        NSString *successReult = [responseDict valueForKey:@"Result"];
-//        NSString *typeReultChal = [responseDict valueForKey:@"Type"];
 
         if([successReult isEqualToString:@"success"] && [typeReultChal isEqualToString:@"C"])
         {
+            
+            // reset challenge stats as "0" after sync
+            
             [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
             BOOL success;
-            NSString *updateQuery = [NSString stringWithFormat:@"UPDATE ChallangeStat SET Sync=%d, column_val='%@' WHERE ChStatID=%d",0, @"", insertedID];
-//            NSString *updateQuery = [NSString stringWithFormat:@"UPDATE ChallangeStat SET Sync=%d WHERE ChStatID=%d",0, insertedID];
+            NSString *updateQuery = [NSString stringWithFormat:@"UPDATE ChallangeStat SET Sync=%d WHERE ChStatID=%d",0, insertedID];
             success = [SCSQLite executeSQL:updateQuery];
             if(success)
             {
                 NSLog(@"SuccessFully Updated ScoreStat ID = %d", insertedID);
                 syncCount ++;
             }
+            
         }
-        
-//        [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
-//        [valuesDictionary setObject:[NSNumber numberWithInteger:totalItemsCount] forKey:TOTAL_VALUE];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
     }
     
     if([responseDictAttandance count]>0)
@@ -370,10 +345,7 @@
         int atdID = (int)[[[responseDictAttandance objectAtIndex:0]valueForKey:@"ID"] integerValue];
         NSString *successReult = [[responseDictAttandance objectAtIndex:0]valueForKey:@"Result"];
         NSString *typeReult = [[responseDictAttandance objectAtIndex:0]valueForKey:@"Type"];
-
-//        int atdID =(int) [[responseDict valueForKey:@"ID"] integerValue];
-//        NSString *successReult = [responseDict valueForKey:@"Result"];
-//        NSString *typeReult = [responseDict valueForKey:@"Type"];
+        
         if([successReult isEqualToString:@"success"] && [typeReult isEqualToString:@"A"])
         {
             [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
@@ -386,10 +358,6 @@
                 syncCount ++;
             }
         }
-        
-//        [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
-//        [valuesDictionary setObject:[NSNumber numberWithInteger:totalItemsCount] forKey:TOTAL_VALUE];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
     }
     
     
@@ -398,10 +366,7 @@
         int atdID = (int)[[[responseDictJournal objectAtIndex:0]valueForKey:@"ID"] integerValue];
         NSString *successReult = [[responseDictJournal objectAtIndex:0]valueForKey:@"Result"];
         NSString *typeReult = [[responseDictJournal objectAtIndex:0]valueForKey:@"Type"];
-
-//        int atdID =(int) [[responseDict valueForKey:@"ID"] integerValue];
-//        NSString *successReult = [responseDict valueForKey:@"Result"];
-//        NSString *typeReult = [responseDict valueForKey:@"Type"];
+        
         if([successReult isEqualToString:@"success"] && [typeReult isEqualToString:@"J"])
         {
             [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
@@ -414,10 +379,6 @@
                 syncCount ++;
             }
         }
-        
-//        [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
-//        [valuesDictionary setObject:[NSNumber numberWithInteger:totalItemsCount] forKey:TOTAL_VALUE];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
     }
     
     if([responseDictPlayer count]>0)
@@ -425,9 +386,6 @@
         int playerID = (int)[[[responseDictPlayer objectAtIndex:0]valueForKey:@"ID"] integerValue];
         NSString *successReult = [[responseDictPlayer objectAtIndex:0]valueForKey:@"Result"];
         NSString *typeReult = [[responseDictPlayer objectAtIndex:0]valueForKey:@"Type"];
-//        int playerID =(int) [[responseDict valueForKey:@"ID"] integerValue];
-//        NSString *successReult = [responseDict valueForKey:@"Result"];
-//        NSString *typeReult = [responseDict valueForKey:@"Type"];
         
         if([successReult isEqualToString:@"success"] && [typeReult isEqualToString:@"P"])
         {
@@ -441,10 +399,6 @@
                 syncCount ++;
             }
         }
-        
-//        [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
-//        [valuesDictionary setObject:[NSNumber numberWithInteger:totalItemsCount] forKey:TOTAL_VALUE];
-//        [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
     }
 
 
@@ -454,9 +408,6 @@
         
         if([delegate respondsToSelector:@selector(SyncToServerProcessCompleted)])
         {
-//            [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
-//            [valuesDictionary setObject:[NSNumber numberWithInteger:totalItemsCount] forKey:TOTAL_VALUE];
-//            [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
             [delegate SyncToServerProcessCompleted];
         }
     }
@@ -606,6 +557,43 @@
     return allStatesJsonStringArrayAtd;
 }
 
+-(NSString*) createJsonStringForStateAttandace:(Attandance*)attandance;
+{
+    //convertAll Integer To String;
+    NSString *atdId = [NSString stringWithFormat:@"%d",attandance.atdId];
+    NSString *atandance = [NSString stringWithFormat:@"%d",attandance.attandance];
+    NSString *teamId = [NSString stringWithFormat:@"%d",attandance.teamId];
+    NSString *playerId = [NSString stringWithFormat:@"%d",attandance.playerId];
+    NSString *add_date = [NSString stringWithFormat:@"%@",attandance.add_date];
+    NSString *attandanceDate = [NSString stringWithFormat:@"%@",attandance.attendanceDate];
+    NSString *email_reportAdded = [NSString stringWithFormat:@"%d", attandance.email_reportAdded];
+    
+    //    NSLog(@"NEW STAT ID : %d",scoreStats.StatID);
+    //    NSLog(@"NEW CHALLENGE ID : %d",scoreStats.chalStID);
+    //    NSLog(@"NEW TEAM ID : %d",scoreStats.chStTeamID);
+    //    NSLog(@"NEW PLAYER ID : %d",scoreStats.chalStPlayerID);
+    //    NSLog(@"NEW COLUM VALUE ID : %@",scoreStats.chalStColVal);
+    //    NSLog(@"NEW COLUM NAME ID : %@",scoreStats.chalStColName);
+    //    NSLog(@"NEW MOD DATE ID : %@",scoreStats.chalModDate);
+    
+    
+    //build an info object and convert to json
+    NSDictionary* newStatInfo = [NSDictionary dictionaryWithObjectsAndKeys:atdId,@"ID",
+                                 atandance,@"attandace",teamId,@"TeamID",
+                                 playerId,@"PlayerID",add_date,@"addDate",
+                                 attandanceDate,@"Date",email_reportAdded,@"email_reportAdded", nil];
+    
+    NSError *error;
+    
+    //convert object to data
+    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:newStatInfo
+                                                       options:NSJSONWritingPrettyPrinted error:&error];
+    //print out the data contents
+    NSString *JsonFinalString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    
+    //NSLog(@"FINAL JSON STRING = %@",JsonFinalString);
+    return JsonFinalString;
+}
 
 -(NSArray*)createJsonStringsArrayJournal
 {
@@ -790,7 +778,7 @@
 }
 
 
--(NSString*) createJsonStringForStateAttandace:(Attandance*)attandance;
+-(NSString*) acreateJsonStringForStateAttandace:(Attandance*)attandance;
 {
     //convertAll Integer To String;
     NSString *atdId = [NSString stringWithFormat:@"%d",attandance.atdId];

@@ -8,9 +8,10 @@
 #import "ReportsController.h"
 #import "ReportVC.h"
 #import "PassFailFitnessReportController.h"
+#import "LoginReportController.h"
 
 @interface ReportsController () {
-    NSArray *reportTitleArr;
+    NSMutableArray *reportTitleArr;
 }
 
 @end
@@ -27,7 +28,7 @@
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
     [self setupNavigationItems];
-    
+    [self setupReportTitles];
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"Cell"];
 }
 
@@ -37,12 +38,20 @@
     NSString *teamName = Global.currntTeam.Team_Name;
     self.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Reports"];
     
+    
+}
+
+- (void) setupReportTitles {
+    
+    reportTitleArr = [[NSMutableArray alloc] initWithArray:@[@"Attendance Report"]];
+    
     if (Global.currntTeam.rptFitness == 1) {
-        reportTitleArr = @[@"Attendence Reports", @"Pass/Fail Fitness Report"];
-    } else {
-        reportTitleArr = @[@"Attendence Reports"];
+        [reportTitleArr addObject:@"Pass/Fail Fitness Report"];
     }
     
+    if (Global.mode != USER_MODE_PLAYER) {
+        [reportTitleArr addObject:@"Login Report"];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -77,7 +86,7 @@
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
     NSString *item = reportTitleArr[indexPath.row];
     
-    if ([item isEqualToString:@"Attendence Reports"]) {
+    if ([item isEqualToString:@"Attendance Report"]) {
         
         ReportVC *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"ReportVC"];
         [self.navigationController pushViewController:viewController animated:YES];
@@ -86,52 +95,12 @@
         PassFailFitnessReportController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"PassFailFitnessReportController"];
         [self.navigationController pushViewController:viewController animated:YES];
         
+    } else if ([item isEqualToString:@"Login Report"]) {
+        
+        LoginReportController *reportController = [[LoginReportController alloc] init];
+        [self.navigationController pushViewController:reportController animated:true];
     }
     
 }
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

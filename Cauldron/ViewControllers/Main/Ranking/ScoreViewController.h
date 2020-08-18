@@ -13,6 +13,7 @@
 {
     NSString *allColumnName;
     int isDecimal;
+    NSString *challengeType;
     
     NSArray *arrComumnName;
     NSArray *PlayersInfoArray;
@@ -25,6 +26,9 @@
     
     NSMutableArray *arrTeamPlayerID;
     NSMutableArray *arrScoreOrientation;
+    
+    NSMutableArray *selectedRowsArray;
+    UILabel *nameContainerView;
 }
 
 @property (nonatomic, assign) int sportsID;
@@ -36,5 +40,6 @@
 
 @property (weak, nonatomic) IBOutlet IQDropDownTextField *dateDDTF;
 @property (strong, nonatomic) IBOutlet UISwitch *emailReportSwitch;
+@property (weak, nonatomic) IBOutlet UIButton *deleteButton;
 
 @end

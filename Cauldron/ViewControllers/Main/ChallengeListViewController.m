@@ -47,7 +47,7 @@ static NSString *SectionHeaderViewIdentifier = @"ChallengeHeader";
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name='%@' AND admin_pw='%@'",[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"],[[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"]];
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
-    NSLog(@"Found Record Details : %@",recordsFound);
+//    NSLog(@"Found Record Details : %@",recordsFound);
     
     int userLevel;
     
@@ -151,10 +151,6 @@ static NSString *SectionHeaderViewIdentifier = @"ChallengeHeader";
         cell.titleLbl.text = [[[challengesArray objectAtIndex:indexPath.section] objectAtIndex:indexPath.row]valueForKey:@"Challenge_Menu"];
     }
     
-//    cell.rightButtons = @[[MGSwipeButton buttonWithTitle:@"Detail" backgroundColor:[UIColor lightGrayColor]]];
-//    cell.tag = indexPath.row;
-//    cell.delegate = self;
-    
     return cell;
 }
 
@@ -179,26 +175,33 @@ static NSString *SectionHeaderViewIdentifier = @"ChallengeHeader";
 
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-    EditChaListTabViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"EditChaListTVC"];
-    NSString *teamName = Global.currntTeam.Team_Name;
-    viewController.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Edit Challenge"];
-    
-    if (indexPath.section == 0) {
-        viewController.navigationFitnessStatus = ChallengeFitnessState_IS;
+    if (Global.currntTeam.TeamID == Global.masterTeamId) {
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+        EditChaListTabViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"EditChaListTVC"];
+        NSString *teamName = Global.currntTeam.Team_Name;
+        viewController.navigationItem.title = [NSString stringWithFormat:@"%@-%@", teamName, @"Edit Challenge"];
+        
+        if (indexPath.section == 0) {
+            viewController.navigationFitnessStatus = ChallengeFitnessState_IS;
+        } else {
+            viewController.navigationFitnessStatus = ChallengeFitnessState_NOT;
+        }
+        viewController.navigationChallengeStatus = ChallengeListState_Edit;
+        
+        NSMutableDictionary *challenge = challengesArray[indexPath.section][indexPath.row];
+        Global.currentChallenge = challenge;
+        
+        viewController.selectedCategory = chalCatArray[indexPath.section][@"CategoryName"];
+        viewController.delegate = self;
+        NSLog(@"first challenge list, %@", Global.currentChallenge);
+        
+        [self.navigationController pushViewController:viewController animated:true];
+        
     } else {
-        viewController.navigationFitnessStatus = ChallengeFitnessState_NOT;
+        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
     }
-    viewController.navigationChallengeStatus = ChallengeListState_Edit;
-    Global.currentChallenge = challengesArray[indexPath.section][indexPath.row];
     
     
-    
-    viewController.selectedCategory = chalCatArray[indexPath.section][@"CategoryName"];
-    viewController.delegate = self;
-    NSLog(@"first challenge list, %@", Global.currentChallenge);
-    
-    [self.navigationController pushViewController:viewController animated:true];
     
 }
 
@@ -218,7 +221,8 @@ static NSString *SectionHeaderViewIdentifier = @"ChallengeHeader";
         }
         
     } else {
-        [Alert showAlert:@"Forbidden!" message:@"You can't delete Challenge" viewController:self];
+        
+        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
     }
 
     

@@ -8,6 +8,15 @@
 
 #import "AppDelegate.h"
 #import "LoginViewController.h"
+#import "UIApplication+AppVersion.h"
+#import "SARate.h"
+
+@import SVProgressHUD;
+//@import IQKeyboardManager;
+@import IQKeyboardManagerSwift;
+
+
+
 
 @implementation AppDelegate
 
@@ -15,19 +24,13 @@ BOOL shouldRotate;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
-    // IQKeyboard enable
-    [IQKeyboardManager sharedManager].enable = true;
+    [self setupSVProgressHud];
+    [self setupIQKeyboardManager];
     [self setNavigationAppearance];
+    [self setupATUpdater];
     
-    // Create folder
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0]; // Get documents folder
-    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"/images"];
-    
-    NSLog(@"image path %@", dataPath);
-    if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:dataPath withIntermediateDirectories:NO attributes:nil error:Nil];
-    }
+    [self setupFileManagerForImages];
+    [self setupSRate];
     
     return YES;
 }
@@ -42,29 +45,71 @@ BOOL shouldRotate;
     
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
-}
-
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-}
-
-- (void)applicationWillTerminate:(UIApplication *)application {
-    // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-}
-
+- (void) setupSRate {
+    [SARate sharedInstance].daysUntilPrompt = 100;
+    [SARate sharedInstance].usesUntilPrompt = 100;
+    [SARate sharedInstance].remindPeriod = 100;
+    [SARate sharedInstance].promptForNewVersionIfUserRated = YES;
+    //enable preview mode
+    [SARate sharedInstance].previewMode = NO;
     
+    [SARate sharedInstance].email = @"jsis@competitive-cauldron.com";
+    // 4 and 5 stars
+    [SARate sharedInstance].minAppStoreRaiting = 4;
+    [SARate sharedInstance].emailSubject = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    [SARate sharedInstance].emailText = @"Disadvantages: ";
+    [SARate sharedInstance].headerLabelText = @"Like app?";
+    [SARate sharedInstance].descriptionLabelText = @"Touch the star to rate.";
+    [SARate sharedInstance].rateButtonLabelText = @"Rate";
+    [SARate sharedInstance].cancelButtonLabelText = @"Not Now";
+    [SARate sharedInstance].setRaitingAlertTitle = @"Rate";
+    [SARate sharedInstance].setRaitingAlertMessage = @"Touch the star to rate.";
+    [SARate sharedInstance].appstoreRaitingAlertTitle = @"Write a review on the AppStore";
+    [SARate sharedInstance].appstoreRaitingAlertMessage = @"Would you mind taking a moment to rate it on the AppStore? It won’t take more than a minute. Thanks for your support!";
+    [SARate sharedInstance].appstoreRaitingCancel = @"Cancel";
+    [SARate sharedInstance].appstoreRaitingButton = @"Rate It Now";
+    [SARate sharedInstance].disadvantagesAlertTitle = @"Disadvantages";
+    [SARate sharedInstance].disadvantagesAlertMessage = @"Please specify the deficiencies in the application. We will try to fix it!";
+}
+
+- (void) setupATUpdater {
+    
+    NSString *appVersion = [UIApplication versionBuild];
+    NSLog(@"appversion: %@, %@", appVersion, FINAL_APP_VERSION);
+    
+    ATAppUpdater *updater = [ATAppUpdater sharedUpdater];
+    [updater setAlertTitle:@"Great News!"];
+    [updater setAlertMessage:@"Competitive Cauldron v6.4 is available on the AppStore."];
+    [updater setAlertUpdateButtonTitle:@"Update"];
+    [updater setAlertCancelButtonTitle:@"Not Now"];
+    [updater setDelegate:self]; // Optional
+    [updater showUpdateWithConfirmation];
+}
+
+- (void) setupFileManagerForImages {
+    // Create folder
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0]; // Get documents folder
+    NSString *dataPath = [documentsDirectory stringByAppendingPathComponent:@"/images"];
+    
+    NSLog(@"image path %@", dataPath);
+    if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:dataPath withIntermediateDirectories:NO attributes:nil error:Nil];
+    }
+}
+
+- (void) setupSVProgressHud {
+    //set SVProgressHud
+    [SVProgressHUD setDefaultStyle:SVProgressHUDStyleLight];
+    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeGradient];
+}
+
+- (void) setupIQKeyboardManager {
+    [[IQKeyboardManager shared] setEnable:YES];
+    [[IQKeyboardManager shared] setShouldResignOnTouchOutside:YES];
+    [[IQKeyboardManager shared] setEnableAutoToolbar:YES];
+    [IQKeyboardManager shared].previousNextDisplayMode = IQPreviousNextDisplayModeAlwaysShow;
+}
 
 - (void) setNavigationAppearance {
     
@@ -86,5 +131,24 @@ BOOL shouldRotate;
                                                             NSShadowAttributeName: shadow1
                                                             }];
 }
+
+#pragma mark - ATAppUpdater Delegate
+- (void)appUpdaterDidShowUpdateDialog
+{
+    NSLog(@"appUpdaterDidShowUpdateDialog");
+}
+
+- (void)appUpdaterUserDidLaunchAppStore
+{
+    NSLog(@"appUpdaterUserDidLaunchAppStore");
+    NSString *iTunesLink = @"itms://itunes.apple.com/us/app/competitive-cauldron/id853669889?mt=8";
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:iTunesLink]];
+}
+
+- (void)appUpdaterUserDidCancel
+{
+    NSLog(@"appUpdaterUserDidCancel");
+}
+
 
 @end

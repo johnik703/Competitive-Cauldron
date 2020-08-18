@@ -64,10 +64,10 @@
         cell = [[[NSBundle mainBundle] loadNibNamed:@"AttandanceReportTableViewCell" owner:self options:nil] objectAtIndex:0];
     }
     
-    cell.lblPlayerNmae.text=[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"name"];
-    cell.lblTrainingDays.text=[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"attended_days"];
-    cell.lblTotalDays.text=[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"total_training_days"];
-    cell.lblPercentage.text=[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"attended_days_perc"];
+    cell.lblPlayerNmae.text = [[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"name"];
+    cell.lblTrainingDays.text = String([[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"attended_days"] intValue]);
+    cell.lblTotalDays.text = String([[[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"trainingDays"] intValue]);
+    cell.lblPercentage.text = [[arrAttandaceReport objectAtIndex:indexPath.row] valueForKey:@"attended_days_perc"];
 
     return cell;
 }
@@ -97,6 +97,34 @@
     NSArray *dictionary = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&error];
     
     return dictionary;
+}
+- (IBAction)handleTodayReport:(id)sender {
+    BOOL checkConnection = [RKCommon checkInternetConnection];
+    if (!checkConnection) {
+        [Alert showAlert:@"Internet Connection Error" message:@"" viewController:self];
+        return;
+    }
+    NSString *userLevel = [[NSUserDefaults standardUserDefaults] stringForKey:@"USERLEVEL"];
+    NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM-dd-yyyy"];
+    // or @"yyyy-MM-dd hh:mm:ss a" if you prefer the time with AM/PM
+    NSLog(@"%@",[dateFormatter stringFromDate:[NSDate date]]);
+    
+    NSString *startDateStr = [dateFormatter stringFromDate:[NSDate date]];
+    NSString *endDateStr = [dateFormatter stringFromDate:[NSDate date]];
+    self.fromDDTF.date = [startDateStr dateWithFormat:@"MM-dd-yyyy"];
+    self.toDDTF.date = [endDateStr dateWithFormat:@"MM-dd-yyyy"];
+    
+    if ([userLevel isEqualToString:@"3"]) {
+        arrAttandaceReport = [self getDataFromServer:[NSString stringWithFormat:attendanceReportPlayer, Global.currntTeam.TeamID, startDateStr, endDateStr, Global.playerIDFinal]];
+    } else {
+        arrAttandaceReport=[self getDataFromServer:[NSString stringWithFormat:attendanceReportTeam, Global.currntTeam.TeamID, startDateStr, endDateStr]];
+    }
+    
+    NSLog(@"dic %@",arrAttandaceReport);
+    
+    
+    [self.tableView reloadData];
 }
 
 - (void)getAttendaceReportData {

@@ -29,6 +29,7 @@
 
 @property (nonatomic, assign) int mode;
 @property (nonatomic, retain) NSMutableArray *arrTeamsId;
+@property (nonatomic, retain) NSString *teamIdsForWhere;
 @property (nonatomic, retain) Team *currntTeam;
 @property (nonatomic, retain) NSMutableDictionary *currentChallenge;
 

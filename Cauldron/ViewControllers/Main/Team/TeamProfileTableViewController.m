@@ -13,6 +13,8 @@
 #import "CreateTeamViewController.h"
 #import "MainController.h"
 #import "PercentProgressCustomView.h"
+@import SVProgressHUD;
+//@class SVProgressHUD;
 
 @interface TeamProfileTableViewController () <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UITextFieldDelegate>
 {
@@ -34,7 +36,7 @@ typedef void(^myCompletion)(BOOL);
 
 @implementation TeamProfileTableViewController
 
-@synthesize timeIntervalSC;
+@synthesize timeIntervalSC, addPictureButton, photoImgView;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -55,10 +57,8 @@ typedef void(^myCompletion)(BOOL);
         
         [self.navigationController setNavigationBarHidden:NO];
         self.navigationItem.title = @"Create Team";
-
+        [self getTeamPositionList];
     }
-    
-    [self getTeamPositionList];
     
     percentProgressView = [[PercentProgressCustomView alloc] initWithFrame:self.view.frame];
     
@@ -90,8 +90,10 @@ typedef void(^myCompletion)(BOOL);
     NSLog(@"position, %@", dic);
     
     NSString *successResult = [dic valueForKey:@"position"];
-    NSLog(@"positiontext, %@", successResult);
-    self.positionTF.text = successResult;
+    if (![successResult isEqual:[NSNull null]]) {
+        self.positionTF.text = successResult;
+    }
+    
     
 }
 
@@ -123,30 +125,27 @@ typedef void(^myCompletion)(BOOL);
     self.seasonEndsDDTF.dateFormatter = [NSDateFormatter formatterFromFormatString:@"MM-dd-yyyy"];
     self.timeDDTF.dropDownMode = IQDropDownModeTimePicker;
     self.timeDDTF.dateFormatter = [NSDateFormatter formatterFromFormatString:@"hh:mm:ss"];
-
-
-    
 }
 
 - (void)fetchTeamDataWithGlobalCurrentTeam {
     
-    NSLog(@"currentTeam, %@", Global.currntTeam);
-    
-    NSLog(@"subscription, %@", Global.currntTeam.subscription_end);
+    NSLog(@"currentTeam, %d", Global.currntTeam.Display_Picture);
     
     self.yearTF.text = Global.currntTeam.Stats_Year;
     self.teamNameTF.text = Global.currntTeam.Team_Name;
-    
-    NSLog(@"seasonstart, %@", Global.currntTeam.SeasonStart);
     
     self.seasonStartsDDTF.date = [Global.currntTeam.SeasonStart dateWithFormat:@"MM-dd-yyyy"];
     self.seasonEndsDDTF.date = [Global.currntTeam.SeasonEnd dateWithFormat:@"MM-dd-yyyy"];
     self.subscriptionDateDDTF.text = Global.currntTeam.subscription_end;
     
-    self.photoImgView.image = [UIImage imageWithData:[Global.currntTeam.Team_Picture base64Data]];
-    if (self.photoImgView.image == nil) {
-        self.photoImgView.image = [UIImage imageNamed:@"default_team_image.jpeg"];
+    if ([Global.currntTeam.Team_Picture length] > 0) {
+        self.photoImgView.image = [UIImage imageWithData:[Global.currntTeam.Team_Picture base64Data]];
+        [addPictureButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
+    } else {
+        [addPictureButton setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
     }
+    
+    
     [self.fitnessPassFailReportSC setOn:Global.currntTeam.rptFitness == 1 ? true : false];
     [self.bulkDataEntrySC setOn:Global.currntTeam.Bulk_Import == 1 ? true : false];
     [self.hightlightBestRankingSC setOn:Global.currntTeam.showbest == 1 ? true : false];
@@ -156,6 +155,7 @@ typedef void(^myCompletion)(BOOL);
     [self.emailCoachForJournalSC setOn:Global.currntTeam.email_journal == 1 ? true : false];
     [self.finalRankingReportSC setOn:Global.currntTeam.showlegend == 1 ? true : false];
     [self.activateSC setOn:Global.currntTeam.Activated == 1 ? true : false];
+    [self.displayTeamPictureSwitch setOn:Global.currntTeam.Display_Picture == 1 ? true : false];
         
     self.birthdayReportBeforeTF.text = [NSString stringWithFormat:@"%d", Global.currntTeam.birthdayAlert];
     self.positionTF.text = Global.currntTeam.team_position;
@@ -182,11 +182,6 @@ typedef void(^myCompletion)(BOOL);
     self.emailTF.text = Global.currntTeam.EmailDesc1Rpt;
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
 - (void)fetchCurrentTeamDataOnGlobalTeamAfterSuccess {
     
     Global.currntTeam.Stats_Year = team.Stats_Year;
@@ -210,6 +205,7 @@ typedef void(^myCompletion)(BOOL);
     Global.currntTeam.currently_running = team.currently_running;
     Global.currntTeam.EmailDesc1Rpt = team.EmailDesc1Rpt;
     
+    Global.currntTeam.Display_Picture = team.Display_Picture;
 }
 
 - (void)fetchCurrentTeamDataOnGlobalTeam {
@@ -220,7 +216,6 @@ typedef void(^myCompletion)(BOOL);
     team.subscription_end = self.subscriptionDateDDTF.text;
     
     if (isSelectedPhoto) {
-//        NSString *base64;
         base64 = [UIImagePNGRepresentation(self.photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
         team.Team_Picture = base64;
     } else {
@@ -228,14 +223,20 @@ typedef void(^myCompletion)(BOOL);
         if (self.navigationTeamStatus == TeamState_Update) {
             team.Team_Picture = Global.currntTeam.Team_Picture;
         } else if (self.navigationTeamStatus == TeamState_Add || self.navigationTeamStatus == TeamState_Create) {
+            
+            
+            // set default image
+            /*
             UIImage *image = [UIImage imageNamed:@"default_team_image.jpeg"];
-            _photoImgView.image = image;
-            base64 = [UIImagePNGRepresentation(_photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-            team.Team_Picture = base64;
+            photoImgView.image = image;
+            base64 = [UIImagePNGRepresentation(photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+             */
+            team.Team_Picture = @"";
         }
     }
     
-    team.rptFitness = self.finalRankingReportSC.isOn == true ? 1 : 0;
+    team.Display_Picture = self.displayTeamPictureSwitch.isOn == true ? 1 : 0;
+    team.rptFitness = self.fitnessPassFailReportSC.isOn == true ? 1 : 0;
     team.Bulk_Import = self.bulkDataEntrySC.isOn == true ? 1 : 0;
     team.showbest = self.hightlightBestRankingSC.isOn == true ? 1 : 0;
     team.showworst = self.highlightDropSC.isOn == true ? 1 : 0;
@@ -244,6 +245,7 @@ typedef void(^myCompletion)(BOOL);
     team.Activated = self.activateSC.isOn == true ? 1 : 0;
     team.birthdayAlert = self.birthdayReportBeforeTF.text == nil ? 0 : [self.birthdayReportBeforeTF.text intValue];
     team.team_position = self.positionTF.text == nil ? @"" : self.positionTF.text;
+    
     
     if (self.timeIntervalSC.selectedSegmentIndex == 0) {
         team.selected_option = @"Daily";
@@ -258,6 +260,7 @@ typedef void(^myCompletion)(BOOL);
     team.currently_running = self.enableSwitch.isOn == true ? String(1) : String(0);
     team.EmailDesc1Rpt = self.emailTF.text == nil ? @"" : self.emailTF.text;
     
+    [teamDictionary setValue: String(team.Display_Picture) forKey: @"Display_Picture"];
     [teamDictionary setValue:team.Stats_Year                        forKey:@"Stats_Year"];
     [teamDictionary setValue:team.Team_Name                         forKey:@"Team_Name"];
     [teamDictionary setValue:team.SeasonStart                       forKey:@"SeasonStart"];
@@ -283,13 +286,16 @@ typedef void(^myCompletion)(BOOL);
 
 -(void) createTeam {
     
-    
     if (isSelectedPhoto) {
-        base64 = [UIImagePNGRepresentation(_photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+        
     } else {
-        UIImage *image = [UIImage imageNamed:@"default_team_image.jpeg"];
-        _photoImgView.image = image;
-        base64 = [UIImagePNGRepresentation(_photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+       
+    }
+    
+    if (photoImgView.image == nil) {
+         base64 = @"";
+    } else {
+        base64 = [UIImagePNGRepresentation(photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
     }
     
     NSLog(@"image, %@", base64);
@@ -324,7 +330,6 @@ typedef void(^myCompletion)(BOOL);
         teamId = Global.currentTeamId;
     }
     
-    int Display_Picture = 1;
     int show_Final_RankingReport = 1;
     
     NSDictionary* params = @{@"PlayerID": Global.playerIDFinal,
@@ -352,7 +357,7 @@ typedef void(^myCompletion)(BOOL);
                              @"run_only_once": String(_scheduleSwitch.on == true ? 1 : 0),
                              @"currently_running": String(_enableSwitch.on == true ? 1 : 0),
                              @"EmailDesc1Rpt": _emailTF.text == nil? @"" : _emailTF.text,
-                             @"Display_Picture": String(Display_Picture),
+                             @"Display_Picture": String(_displayTeamPictureSwitch.isOn == true ? 1 : 0),
                              @"selected_week": selected_week,
                              @"selected_month": selected_month,
                              @"show_Final_RankingReport": String(show_Final_RankingReport)
@@ -361,12 +366,12 @@ typedef void(^myCompletion)(BOOL);
     
     NSLog(@"PlayerId-----%@", Global.playerIDFinal);
     [API executeHTTPRequest:Post url:syncToServerServiceURLManageTeam parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [self parseResponse:responseDict params:params];
     } ErrorHandler:^(NSString *errorStr) {
         
         NSLog(@"request ---%@", Post);
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Something went wrong" message:nil viewController:self];
     }];
     
@@ -469,18 +474,10 @@ typedef void(^myCompletion)(BOOL);
 
 - (void) syncFromServerForCategoryAndChallenge: (NSString *)teamId {
     
-//    [ProgressHudHelper showLoadingHudWithText:@"UpdatingChallengeData...."];
-    
     [percentProgressView showProgress];
     
     SyncFromServer *syncFromServer = [[SyncFromServer alloc] init];
     syncFromServer.delegate = self;
-    
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-//        [syncFromServer startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:(int)teamId syncCount:2];
-//    });
-    
-    
     
     int cnt = (int)Global.arrTeamsId.count;
     for (int i = 0; i < cnt; i++) {
@@ -488,10 +485,6 @@ typedef void(^myCompletion)(BOOL);
         [syncFromServer startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:(int)teamId syncCount:cnt playerID:(int)[Global.playerIDFinal intValue] mode:Global.mode];
         
     }
-    
-
-    
-    
 }
 
 
@@ -508,12 +501,12 @@ typedef void(^myCompletion)(BOOL);
     BOOL checkConn = [RKCommon checkInternetConnection];
     
     if (!checkConn) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Connection Error" message:@"No Active Connection Found" viewController:self];
         return;
     }
     
-    [ProgressHudHelper showLoadingHudWithText:@"Authenticating..."];
+    [SVProgressHUD showWithStatus:@"Authenticating..."];
     [self performSelector:@selector(dismissGlobalHUDByDelay) withObject:nil afterDelay:30];
     
     NSDictionary *dictionary = [JSONHelper loadJSONDataFromURL:[NSString stringWithFormat:loginServiceURL, userID.stringByReplacingWhiteSpace, base64String.stringByReplacingWhiteSpace]];
@@ -539,7 +532,7 @@ typedef void(^myCompletion)(BOOL);
     [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%d",aUser.UserLevel ] forKey:@"ONLINE_PREVIOUS_LOG_USERLEVEL"];
     
     // got sync data from server
-    [ProgressHudHelper hideLoadingHud];
+    [SVProgressHUD dismiss];
     
     [percentProgressView showProgress];
     
@@ -562,7 +555,7 @@ typedef void(^myCompletion)(BOOL);
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name ='%@' AND admin_pw ='%@'",userID,userPassword];
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
     
-    NSLog(@"Found Record Details : %@",recordsFound);
+//    NSLog(@"Found Record Details : %@",recordsFound);
     
     NSLog(@"User_Mode, %d", Global.mode);
     
@@ -629,7 +622,7 @@ typedef void(^myCompletion)(BOOL);
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name ='%@' AND admin_pw ='%@'",userID,UserPass];
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
     
-    NSLog(@"Found Record Details : %@",recordsFound);
+//    NSLog(@"Found Record Details : %@",recordsFound);
     int userLevel;
     
     if (recordsFound.count > 0) {
@@ -642,7 +635,6 @@ typedef void(^myCompletion)(BOOL);
         ChallangesVC *allChallanges=[[ChallangesVC alloc]init];
         
         // Goto Menu View
-//        SWRevealViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SWRevealViewController"];
         
         allChallanges.userTeamID = (int)[[[recordsFound objectAtIndex:0]valueForKey:@"TeamID"]integerValue];
         Global.teamSportID=(int)[[[recordsFound objectAtIndex:0]valueForKey:@"TeamID"]integerValue];
@@ -704,7 +696,8 @@ typedef void(^myCompletion)(BOOL);
     BOOL activeConn = [RKCommon checkInternetConnection];
     
     if (activeConn == NO) {
-        [ProgressHudHelper hideLoadingHud];
+//        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Connection Error" message:@"No Active Connection Found" viewController:self];
     }
 }
@@ -716,8 +709,7 @@ typedef void(^myCompletion)(BOOL);
                              @"TeamID": teamId
                              };
 
-    [API executeHTTPRequest:Post url:syncToServerServiceURLManageChallenge parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+    [API executeHTTPRequest:Post url:syncToServerServiceURLManageChallenge parameters:params CompletionHandler:^(NSDictionary *responseDict) {        [SVProgressHUD dismiss];
         [self parseResponseCategory:responseDict params:params];
     } ErrorHandler:^(NSString *errorStr) {
         
@@ -729,8 +721,6 @@ typedef void(^myCompletion)(BOOL);
 }
 
 - (void) parseResponseCategory: (NSDictionary *)dic params:(NSDictionary *)paramsDic {
-    
-    NSLog(@"testCategory---%@", dic);
     
     NSString *successResult = [dic valueForKey:@"mode"];
     NSString *teamId = [dic valueForKey:@"TeamID"];
@@ -765,14 +755,9 @@ typedef void(^myCompletion)(BOOL);
     }
     
     if (self.navigationTeamStatus == TeamState_Add || self.navigationTeamStatus == TeamState_Create) {
-//        [Alert showAlert:@"Create Team?" message:@"Are you sure?" viewController:self complete:^{
-//            [ProgressHudHelper showLoadingHudWithText:@"Wait..."];
-//            [self fetchCurrentTeamDataOnGlobalTeam];
-//            [self createTeam];
-//        }];
         
         [Alert showOKCancelAlert:@"Create Team?" message:@"Are you sure?" viewController:self complete:^{
-            [ProgressHudHelper showLoadingHudWithText:@"Wait..."];
+            [SVProgressHUD show];
             [self fetchCurrentTeamDataOnGlobalTeam];
             [self createTeam];
         } canceled:^{
@@ -780,13 +765,8 @@ typedef void(^myCompletion)(BOOL);
         }];
         
     } else if (self.navigationTeamStatus == TeamState_Update) {
-//        [Alert showAlert:@"Edit Team?" message:@"Are you sure?" viewController:self complete:^{
-//            [ProgressHudHelper showLoadingHudWithText:@"Wait..."];
-//            [self fetchCurrentTeamDataOnGlobalTeam];
-//            [self createTeam];
-//        }];
         [Alert showOKCancelAlert:@"Edit Team?" message:@"Are you sure?" viewController:self complete:^{
-            [ProgressHudHelper showLoadingHudWithText:@"Wait..."];
+            [SVProgressHUD show];
             [self fetchCurrentTeamDataOnGlobalTeam];
             [self createTeam];
         } canceled:^{
@@ -794,10 +774,6 @@ typedef void(^myCompletion)(BOOL);
         }];
 
     }
-    
-    
-    
-    
     
 }
 
@@ -818,38 +794,49 @@ typedef void(^myCompletion)(BOOL);
 }
 
 - (IBAction)didTapPhoto:(id)sender {
-    UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
-    UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
+    UIImage *addPictureImage = [UIImage imageNamed:@"ic_camera"];
+    if ([[addPictureButton currentImage] isEqual:addPictureImage]) {
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         
-    }];
-    UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
+        UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
+        UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
         
-    }];
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
-    
-    [actionSheet addAction:cameraAction];
-    [actionSheet addAction:libraryAction];
-    [actionSheet addAction:cancelAction];
-    
-    [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
-    
-    UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
-    popPresenter.sourceView = (UIButton *)sender;
-    popPresenter.sourceRect = ((UIButton *)sender).bounds;
-    
-    [self presentViewController:actionSheet animated:true completion:nil];
-    
+        [actionSheet addAction:cameraAction];
+        [actionSheet addAction:libraryAction];
+        [actionSheet addAction:cancelAction];
+        
+        [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
+        
+        UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
+        popPresenter.sourceView = (UIButton *)sender;
+        popPresenter.sourceRect = ((UIButton *)sender).bounds;
+        
+        [self presentViewController:actionSheet animated:true completion:nil];
+    } else {
+        [Alert showOKCancelAlert:nil message:@"Are you sure you want to remove team picture?" viewController:self complete:^{
+            
+            photoImgView.image = nil;
+            Global.currntTeam.Team_Picture = @"";
+            isSelectedPhoto = false;
+            [addPictureButton setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
+        } canceled:nil];
+    }
 }
 
 #pragma mark - Table view data source
@@ -895,8 +882,9 @@ typedef void(^myCompletion)(BOOL);
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     UIImage *image = [info valueForKey:UIImagePickerControllerEditedImage];
-    _photoImgView.image = image;
+    photoImgView.image = image;
     isSelectedPhoto = true;
+    [addPictureButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 

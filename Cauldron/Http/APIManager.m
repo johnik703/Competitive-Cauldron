@@ -119,7 +119,7 @@ static APIManager *singleton = nil;
     if ([method isEqualToString:@"get"]) {
         
         [manager GET:url parameters:paramDic progress:nil success:^(NSURLSessionTask *task, id responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionTask *operation, NSError *error) {
             NSLog(@"Error: %@", error);
@@ -129,7 +129,7 @@ static APIManager *singleton = nil;
     } else if ([method isEqualToString:@"post"]) {
         
         [manager POST:url parameters:paramDic progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
             NSLog(@"Error: %@", error);
@@ -139,7 +139,7 @@ static APIManager *singleton = nil;
     } else if ([method isEqualToString:@"patch"]) {
         
         [manager PATCH:url parameters:paramDic success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
             NSLog(@"Error: %@", error);
@@ -149,7 +149,7 @@ static APIManager *singleton = nil;
     } else if ([method isEqualToString:@"delete"]) {
         
         [manager DELETE:url parameters:paramDic success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
             NSLog(@"Error: %@", error);
@@ -175,7 +175,7 @@ static APIManager *singleton = nil;
     if ([method isEqualToString:@"get"]) {
         
         [manager GET:url parameters:paramDic progress:nil success:^(NSURLSessionTask *task, id responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionTask *operation, NSError *error) {
             NSLog(@"Error: %@", error);
@@ -195,7 +195,7 @@ static APIManager *singleton = nil;
     } else if ([method isEqualToString:@"patch"]) {
         
         [manager PATCH:url parameters:paramDic success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
             NSLog(@"Error: %@", error);
@@ -205,7 +205,7 @@ static APIManager *singleton = nil;
     } else if ([method isEqualToString:@"delete"]) {
         
         [manager DELETE:url parameters:paramDic success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-            NSLog(@"JSON: %@", responseObject);
+//            NSLog(@"JSON: %@", responseObject);
             succeedHandler(responseObject);
         } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
             NSLog(@"Error: %@", error);

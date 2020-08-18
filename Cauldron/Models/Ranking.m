@@ -9,5 +9,5 @@
 #import "Ranking.h"
 
 @implementation Ranking
-@synthesize avg1,chanllangeId,playerId,playerName,rank,rankID,teamId;
+@synthesize avg1,chanllangeId,playerId,playerName,rank,rankID,teamId, graphArray;
 @end

@@ -22,6 +22,7 @@
 #import "MainController.h"
 #import "PercentProgressView.h"
 #import "PercentProgressCustomView.h"
+#import "UIApplication+AppVersion.h"
 
 
 @interface LoginViewController() {
@@ -44,13 +45,6 @@
     
     self.facebookBtn.hidden = YES;
     
-    // for test
-//    _emailTF.text = @"jason11111";
-//    _passwordTF.text = @"Pass111!";
-    
-//    _emailTF.text = @"test1";
-//    _passwordTF.text = @"Test11";
-    
     
     percentProgressView = [[PercentProgressCustomView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     UIView *keywindow = [UIApplication sharedApplication].keyWindow;
@@ -63,12 +57,9 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:YES];
-//    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"ISLOGIN"];
     if (UDGetBool(@"ISLOGIN")) {
         NSString *userID = [[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"];
         NSString *userPassword = [[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"];
-//        Global.teamName = [[NSUserDefaults standardUserDefaults] stringForKey:@"Team_Name"];
-//        NSLog(@"test loged user---%@, %@, %@", userID, userPassword, Global.teamName);
         [self checkAuthenticationOfflineWithUserID:userID andPassword:userPassword];
     }
     
@@ -118,14 +109,13 @@
     
     [[NSUserDefaults standardUserDefaults] setObject:_emailTF.text forKey:@"SAVEDUSERID"];
     [[NSUserDefaults standardUserDefaults] setObject:_passwordTF.text forKey:@"SAVEDUSERPASS"];
-    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ISLOGIN"];
+    
     [[NSUserDefaults standardUserDefaults] setObject:Global.teamName forKey:@"Team_Name"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     NSString *prevUserName = [[NSUserDefaults standardUserDefaults] stringForKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
     NSString *prevPass = [[NSUserDefaults standardUserDefaults] stringForKey:@"ONLINE_PREVIOUS_LOG_PASSWOR"];
     NSString *prevLevel = [[NSUserDefaults standardUserDefaults] stringForKey:@"ONLINE_PREVIOUS_LOG_USERLEVEL"];
-    NSLog(@"user name %@ pass %@ level %@",prevUserName,prevPass,prevLevel);
     [_emailTF resignFirstResponder];
     [_passwordTF resignFirstResponder];
     
@@ -138,8 +128,6 @@
     //???
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name='%@' AND admin_pw='%@'", _emailTF.text, _passwordTF.text];
     NSArray *records = [SCSQLite selectRowSQL:query];
-    
-    NSLog(@"my record information %@", records);
     
     if (records.count > 0 && [prevUserName isEqualToString:_emailTF.text] && [prevPass isEqualToString:_passwordTF.text]) {
         [self checkAuthenticationOfflineWithUserID:_emailTF.text andPassword:_passwordTF.text];
@@ -156,7 +144,6 @@
     viewController.navigationStatus = RegisterState_Singup;
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:viewController];
     [self presentViewController:nav animated:true completion:nil];
-//    [self.navigationController pushViewController:viewController animated:true];
 }
 
 - (IBAction)didTapForgotPassword:(id)sender {
@@ -168,7 +155,6 @@
 
 - (void)syncFromServerProcessCompleted {
     [self checkAuthenticationOfflineWithUserID:_emailTF.text andPassword:_passwordTF.text];
-//    [ProgressHudHelper hideLoadingHud];
     
     [percentProgressView hideProgressBar];
 }
@@ -193,15 +179,42 @@
     return true;
 }
 
+- (void) checkCurrentAppVersion {
+    NSString *currentAppVersion = [UIApplication versionBuild];
+    if ([currentAppVersion  isEqual: FINAL_APP_VERSION]) {
+        [Alert showAlert:@"Thank you for your update!" message:@"You should log in again because our database was updated." viewController:self];
+        return;
+    }
+}
+
+- (BOOL) isFinalDatabase {
+    
+    int appDatabaseVersion = (int)[UserDefaults integerForKey:@"FINAL_DATABASE_VERSION"];
+    
+    if (appDatabaseVersion < FINAL_DATABASE_VERSION) {
+        return NO;
+    }
+    return YES;
+}
+
+
+
 - (void)checkAuthenticationOfflineWithUserID:(NSString*)userID andPassword:(NSString*)UserPass {
     
+    // we need this logic if the database was updated in the new versioin
+//    [self checkCurrentAppVersion];
+    
+    if (UDGetBool(@"ISLOGIN")) {
+        if (![self isFinalDatabase]) {
+            [Alert showAlert:@"Thank you for your update!" message:@"You should login again because our database updated." viewController:self];
+            return;
+        }
+    }
+ 
     [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-    //???
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE upper(admin_name) ='%@' AND admin_pw ='%@'",userID.uppercaseString,UserPass];
     NSArray *recordsFound = [SCSQLite selectRowSQL:query];
-    
-    NSLog(@"Found Record Details : %@",recordsFound);
     int userLevel;
     
     if (recordsFound.count > 0) {
@@ -212,11 +225,6 @@
     if (recordsFound.count > 0 && userLevel != 0 )
     {
         ChallangesVC *allChallanges=[[ChallangesVC alloc]init];
-        
-        // Goto Menu View
-//        SWRevealViewController *viewController = [self.storyboard instantiateViewControllerWithIdentifier:@"SWRevealViewController"];
-        
-//        CreateTeamViewController *createTeamViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"CreateTeamViewController"];
         
         
         allChallanges.userTeamID = (int)[[[recordsFound objectAtIndex:0]valueForKey:@"TeamID"]integerValue];
@@ -244,37 +252,23 @@
         NSLog(@"globalSync count : %d",Global.syncCount);
         allChallanges.soportsID = teamSportID;
         
-        // Save Username and Password For Next Login
-//        [[NSUserDefaults standardUserDefaults] setObject:_emailTF.text forKey:@"SAVEDUSERID"];
-//        [[NSUserDefaults standardUserDefaults] setObject:_passwordTF.text forKey:@"SAVEDUSERPASS"];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ISLOGIN"];
-//        [[NSUserDefaults standardUserDefaults] setObject:Global.teamName forKey:@"Team_Name"];
-//        [[NSUserDefaults standardUserDefaults] setObject:Global.arrTeamsId forKey:@"ARRTEAMS"];
-//        [[NSUserDefaults standardUserDefaults] setObject:Global.playerIDFinal forKey:@"PLAYERID"];
-//        [[NSUserDefaults standardUserDefaults] setObject:Global.currntTeam.Sport forKey:@"SPORT"];
-//        [[NSUserDefaults standardUserDefaults] setInteger:Global.mode forKey:@"USER_MODE"];
         [[NSUserDefaults standardUserDefaults] synchronize];
         
         NSLog(@"User_Mode, %d", Global.mode);
         NSLog(@"User_arrTeamsid, %@", Global.arrTeamsId);
         
-        
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ISLOGIN"];
         if(isRememberLogin)
         {
             [[NSUserDefaults standardUserDefaults] setObject:_emailTF.text forKey:@"SAVEDUSERID"];
             [[NSUserDefaults standardUserDefaults] setObject:_passwordTF.text forKey:@"SAVEDUSERPASS"];
             [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"CHECKBOXSTAT"];
             [[NSUserDefaults standardUserDefaults] setObject:@"1" forKey:@"CHECKBOXSTATSTR"];
-//            [[NSUserDefaults standardUserDefaults] setObject:delegateObj.teamName forKey:@"Team_Name"];
-//            NSLog(@"team name %@", [[NSUserDefaults standardUserDefaults] stringForKey:@"Team_Name"] );
+            
             [[NSUserDefaults standardUserDefaults] synchronize];
             
             //save user id And Password
         }
-
-        
-        
-//        Global.mode = 2;
         
         if (Global.mode  == USER_MODE_CLUB || Global.mode == USER_MODE_COACH || Global.mode == USER_MODE_DEMO) {
             CreateTeamViewController *createTeamViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"CreateTeamViewController"];
@@ -289,9 +283,6 @@
             ApplicationDelegate.window.rootViewController = viewController;
         }
         
-        
-        
-//        ApplicationDelegate.window.rootViewController = viewController;
     } else {
         if (![_emailTF.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] && ![_passwordTF.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]) {
             [ProgressHudHelper hideLoadingHud];
@@ -349,11 +340,6 @@
         
         NSLog(@"login dictionary---%@", dictionary);
         
-//        [[NSUserDefaults standardUserDefaults] setObject:_emailTF.text forKey:@"SAVEDUSERID"];
-//        [[NSUserDefaults standardUserDefaults] setObject:_passwordTF.text forKey:@"SAVEDUSERPASS"];
-//        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ISLOGIN"];
-//        [[NSUserDefaults standardUserDefaults] synchronize];
-        
         Global.playerIDFinal = String(aUser.PlayerID);
         Global.currntTeam.Sport = aUser.Sport;
         
@@ -397,11 +383,8 @@
         
         // got sync data from server
         [ProgressHudHelper hideLoadingHud];
-//        [ProgressHudHelper showLoadingHudWithText:@"Data Syncing...."];
         
         [percentProgressView showProgress];
-        
-//        [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:nil];
         
         [self performSelector:@selector(dismissGlobalHUDByDelay) withObject:nil afterDelay:30];
         SyncFromServer *syncData = [[SyncFromServer alloc]init];
@@ -418,112 +401,16 @@
         [[NSUserDefaults standardUserDefaults] setObject:aUser.Sport forKey:@"SPORT"];
         [[NSUserDefaults standardUserDefaults] setInteger:Global.masterTeamId forKey:@"MASTERTEAMID"];
         
-        
-        NSString *query = [NSString stringWithFormat:@"SELECT * FROM TeamInfo WHERE admin_name ='%@' AND admin_pw ='%@'",userID,UserPass];
-        NSArray *recordsFound = [SCSQLite selectRowSQL:query];
-        
-        NSLog(@"Found Record Details : %@",recordsFound);
-        
         NSLog(@"User_Mode, %d", Global.mode);
         
         int cnt = (int)aUser.arrTeams.count;
         for (int i = 0; i < cnt; i++) {
             NSInteger teamId = [[aUser.arrTeams objectAtIndex:i] integerValue];
             [syncData startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:(int)teamId syncCount:cnt playerID:aUser.PlayerID mode:Global.mode];
-            
-            NSLog(@"testcheckpoint,%d, %d", i, cnt);
-            
-            //                if (i == cnt) {
-            //                    syncData.delegate = self;
-            //                }
         }
-
-        
-//        if (aUser.Mode == USER_MODE_CLUB  || Global.mode == USER_MODE_COACH) {
-//            int cnt = (int)aUser.arrTeams.count;
-//            for (int i = 0; i < cnt; i++) {
-//                NSInteger teamId = [[aUser.arrTeams objectAtIndex:i] integerValue];
-//                [syncData startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:(int)teamId syncCount:cnt];
-//                
-//                NSLog(@"testcheckpoint,%d, %d", i, cnt);
-//                
-////                if (i == cnt) {
-////                    syncData.delegate = self;
-////                }
-//            }
-////            syncData.delegate = self;
-//            
-//        } else {
-//            [syncData startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:aUser.TeamID syncCount:1];
-////            syncData.delegate = self;
-//        }
-
         
         return;
     }
-    
-
-    
-//    Global.playerIDFinal=[NSString stringWithFormat:@"%d",aUser.PlayerID];
-//    [[NSUserDefaults standardUserDefaults] setInteger:aUser.PlayerID forKey:@"playerIDFinal"];
-//    [[NSUserDefaults standardUserDefaults] setInteger:aUser.UserLevel forKey:@"USERLEVEL"];
-//    [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%@",aUser.teams] forKey:@"teams"];
-//    NSString *teams = [[NSUserDefaults standardUserDefaults] stringForKey:@"teams"];
-//    NSLog(@"user lvl %@",teams);
-//    NSLog(@"user lvl %d",aUser.UserLevel);
-    
-    // username and password is not correct
-//    if (aUser.TeamID == 0 && aUser.auth == 0) {
-//        //        [Alert showAlert:@"No team available" message:@"Please setup Team on website." viewController:self];
-//        //        [ProgressHudHelper hideLoadingHud];
-//        //        return;
-//        CreateTeamViewController *createTeamViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"CreateTeamViewController"];
-//        
-//        createTeamViewController.navigationCreateControllerStatus = CreateControllerState_Signup;
-//        [self.navigationController pushViewController:createTeamViewController animated:YES];
-//        return;
-//        
-//    }
-
-//    if (aUser.auth != 1) {
-//        //show aler user not found on server
-//        [ProgressHudHelper hideLoadingHud];
-//        [Alert showAlert:@"Invalid Username or Password." message:@"" viewController:self];
-//        _emailTF.text = @"";
-//        _passwordTF.text = @"";
-//        
-//        return;
-//    }
-    
-    
-    // login successfully
-//    [Global.globalInfoArr addObject:dictionary];
-//    
-//    [[NSUserDefaults standardUserDefaults] setObject:aUser.UserName forKey:@"ONLINE_PREVIOUS_LOG_USERNAME"];
-//    [[NSUserDefaults standardUserDefaults] setObject:aUser.Password forKey:@"ONLINE_PREVIOUS_LOG_PASSWORD"];
-//    [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithFormat:@"%d",aUser.UserLevel ] forKey:@"ONLINE_PREVIOUS_LOG_USERLEVEL"];
-//    
-//    // got sync data from server
-//    [ProgressHudHelper hideLoadingHud];
-//    [ProgressHudHelper showLoadingHudWithText:@"Data Syncing...."];
-//    [self performSelector:@selector(dismissGlobalHUDByDelay) withObject:nil afterDelay:30];
-//    SyncFromServer *syncData = [[SyncFromServer alloc]init];
-//    syncData.delegate = self;
-//    
-//    Global.mode = (int)aUser.Mode;
-//    Global.arrTeamsId = aUser.arrTeams;
-//    Global.currentTeamId = aUser.TeamID;
-//    
-//    if (aUser.Mode == TEAM_MODE_CLUB) {
-//        int cnt = (int)aUser.arrTeams.count;
-//        for (int i = 0; i < cnt; i++) {
-//            NSInteger teamId = [[aUser.arrTeams objectAtIndex:i] integerValue];
-//            [syncData startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:(int)teamId];
-//        }
-//        
-//    } else {
-//        [syncData startSyncFromServerWithDataDict:nil serviceType:@"startSync" WithTeamID:aUser.TeamID];
-//    }
     
 }
 
@@ -570,28 +457,10 @@
     
     [cbv setStateChangedTarget:self selector:@selector(checkBoxViewChangedState:)];
     [self.view addSubview:cbv];
-    
-    //check previou state of check box
-//    if(savedCheckedStat)
-//    {
-//        NSString *getSavedUserID = [[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERID"];
-//        NSString *getSavedUserPass = [[NSUserDefaults standardUserDefaults] stringForKey:@"SAVEDUSERPASS"];
-//        NSLog(@"team name %@",[[NSUserDefaults standardUserDefaults] stringForKey:@"Team_Name"]);
-//        
-//        NSLog(@"SAVED USERID : %@ AND PASSWORD : %@",getSavedUserID,getSavedUserPass);
-//        
-//        
-//        
-//        isRememberLogin = YES;
-//        [self checkAuthenticationOfflineWithUserID:getSavedUserID andPassword:getSavedUserPass];
-//    }
 }
 
 - (void)checkBoxViewChangedState:(SSCheckBoxView *)cbv
 {
-    
-    NSString *checkStatToSvae = [NSString stringWithFormat:@"%d",cbv.checked];
-    NSLog(@"CURRENT STAT OF CHECKBOX  = %@",checkStatToSvae);
     
     if(cbv.checked)
     {
@@ -603,9 +472,6 @@
         [[NSUserDefaults standardUserDefaults] setObject:@"1" forKey:@"CHECKBOXSTATSTR"];
         [[NSUserDefaults standardUserDefaults] setObject:_emailTF.text forKey:@"finalID"];
         [[NSUserDefaults standardUserDefaults] setObject:_passwordTF.text forKey:@"finalPass"];
-        
-//        [[NSUserDefaults standardUserDefaults] setObject:delegateObj.teamName forKey:@"Team_Name"];
-//        NSLog(@"team name %@", [[NSUserDefaults standardUserDefaults] stringForKey:@"Team_Name"] );
         [[NSUserDefaults standardUserDefaults] synchronize];
         
     }

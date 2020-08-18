@@ -17,4 +17,6 @@ typedef void (^AlertCompleteHandler) ();
 + (void) showAlert:(NSString *)title message:(NSString *)message viewController:(UIViewController *)viewController complete:(AlertCompleteHandler)handler;
 + (void) showOKCancelAlert:(NSString *)title message:(NSString *)message viewController:(UIViewController *)viewController complete:(AlertCompleteHandler)okHandler canceled:(AlertCompleteHandler)canceledHandler;
 
++ (void) showYesNoAlert:(NSString *)title message:(NSString *)message viewController:(UIViewController *)viewController complete:(AlertCompleteHandler)okHandler canceled:(AlertCompleteHandler)canceledHandler;
+
 @end

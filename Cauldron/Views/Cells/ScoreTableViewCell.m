@@ -15,7 +15,27 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     // Initialization code
+    
+    self.deleteCheckBox.boxType = BEMBoxTypeSquare;
+    self.deleteCheckBox.onAnimationType = BEMAnimationTypeFill;
+    self.deleteCheckBox.offAnimationType = BEMAnimationTypeFill;
+    
     self.subViewsArr = [[NSMutableArray alloc] init];
+    [self setupLongPressGestureRecognizer];
+}
+
+- (void)setupLongPressGestureRecognizer {
+    
+    [self.titleLbl setUserInteractionEnabled:YES];
+    UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+    
+    [self.titleLbl addGestureRecognizer:longPressGestureRecognizer];
+}
+
+- (void)handleLongPressGesture: (UILongPressGestureRecognizer*) gesture {
+    
+    [self.delegate handleLongPressGesture:gesture atCell:self];
+    
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
@@ -77,7 +97,7 @@
     
     UIView *label = sender.view;
     
-    NSLog(@"%d", label.tag);
+//    NSLog(@"%d", label.tag);
     
     int index = label.tag / 1000;
     int i = label.tag % 1000;

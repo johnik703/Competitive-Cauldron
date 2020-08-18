@@ -6,7 +6,7 @@
 //
 
 #import "SCSQLite.h"
-
+#import "UIApplication+AppVersion.h"
 @interface SCSQLite ()
 
 - (BOOL)openDatabase;
@@ -59,6 +59,7 @@
     
 	//Check if database is open and ready.
 	if ([SCSQLite shared]->db == nil) {
+        
 		openDatabase = [[SCSQLite shared] openDatabase];
 	}
 	
@@ -66,7 +67,7 @@
 		sqlite3_stmt *statement;
 		const char *query = [sql UTF8String];
         
-        NSLog(@"coachQuery, %s", query);
+//        NSLog(@"coachQuery, %s", query);
         
         // prepare
         if (sqlite3_prepare_v2([SCSQLite shared]->db, query, -1, &statement, NULL) != SQLITE_OK) {
@@ -296,12 +297,26 @@
     }
     
     //first check if exist
-	if(![[NSFileManager defaultManager] fileExistsAtPath:databasePath]) {
+    
+    NSString *str = [[NSBundle mainBundle] resourcePath];
+    NSString *itemPath = [str stringByAppendingPathComponent:self.database];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+	if(![fileManager fileExistsAtPath:databasePath]) {
         // if not, move pro mainbundle root to documents
-        NSString *str = [[NSBundle mainBundle] resourcePath];
-		BOOL success = [[NSFileManager defaultManager] copyItemAtPath:[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:self.database] toPath:databasePath error:nil];
+        
+		BOOL success = [fileManager copyItemAtPath: itemPath toPath:databasePath error:nil];
 		if (!success) return NO;
-	}
+    } else {
+        
+        int appDatabaseVersion = (int)[UserDefaults integerForKey:@"FINAL_DATABASE_VERSION"];
+        
+        if (appDatabaseVersion < FINAL_DATABASE_VERSION) {
+            [fileManager removeItemAtPath:databasePath error:nil];
+            BOOL success = [fileManager copyItemAtPath:itemPath toPath:databasePath error:nil];
+            if (!success) return NO;
+            [UserDefaults setInteger:FINAL_DATABASE_VERSION forKey:@"FINAL_DATABASE_VERSION"];
+        }
+    }
     
     BOOL success = YES;
     

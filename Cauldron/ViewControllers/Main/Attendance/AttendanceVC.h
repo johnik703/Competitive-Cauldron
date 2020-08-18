@@ -11,7 +11,8 @@
 @interface AttendanceVC : UIViewController
 {
     NSArray *tableData;
-    NSArray *PlayersInfoArray;
+    NSArray *playerInfos;
+    NSMutableArray *PlayersInfoArray;
     NSMutableArray *selectedRowsArray;
     NSMutableArray *teamPlayers;
 }

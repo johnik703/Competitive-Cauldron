@@ -9,6 +9,7 @@
 #import "EditChaListTabViewController.h"
 #import "ChallengeListViewController.h"
 #import "CustomTypeController.h"
+@import SVProgressHUD;
 
 @interface EditChaListTabViewController ()<UINavigationControllerDelegate, UIImagePickerControllerDelegate, IQDropDownTextFieldDelegate>
 {
@@ -34,6 +35,8 @@
 
 @implementation EditChaListTabViewController
 
+@synthesize addPictureButton, photoImgView, displayHomepageSwitch, rankCountTextField;
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 //    [self addMenuLeftBarButtomItem];
@@ -47,8 +50,6 @@
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@" " style:UIBarButtonItemStylePlain target:nil action:nil];
     
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
-    
-//    self.photoImgView.image            = [UIImage imageWithData:[Global.objSignUp.base64Pic base64Data]];
     
     [self setupAllUIs];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -80,8 +81,11 @@
     self.list_challengeType.delegate = self;
     self.list_challengeMultiplier.delegate = self;
     self.list_FitnessStandard.delegate = self;
+    rankCountTextField.isOptionalDropDown = NO;
+    rankCountTextField.delegate = self;
     
     _list_challengeMultiplier.itemList = @[@"1",@"2",@"3",@"4",@"5"];
+    rankCountTextField.itemList = @[@"3", @"4", @"5"];
     
     self.descriptionText.text = @"";
     
@@ -102,12 +106,13 @@
         
         fitnessHeight = 0;
         addFieldHeight = 0;
+        rankCountCellHeight = 0;
+        [displayHomepageSwitch setOn:NO];
         [self.tableView reloadData];
         self.addCustomTypeLabel.text = @"Create Structure";
+        [addPictureButton setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
         
     } else {
-        
-//        addFieldHeight = 50;
         
         self.addCustomTypeLabel.text = @"Edit Structure";
         
@@ -158,95 +163,107 @@
     [self.switch_enabledChallenge setOn:(int)[[Global.currentChallenge objectForKey:@"Enable"] intValue] == 1 ? true : false];
     [self.switch_excludeFromFinalRpt setOn:(int)[[Global.currentChallenge objectForKey:@"Challenge_Exclude"] intValue] == 1 ? true : false];
     [self.switch_includeTopPerformerReport setOn:(int)[[Global.currentChallenge objectForKey:@"topPerformer"] intValue] == 1 ? true : false];
-
+    
+    int displayHomePage = (int)[[Global.currentChallenge objectForKey:@"isHome"] intValue];
+    [self.displayHomepageSwitch setOn:displayHomePage == 1 ? true : false];
+    
+    if (displayHomePage == 1) {
+        rankCountCellHeight = 50;
+        
+        int rankCount = (int)[[Global.currentChallenge objectForKey:@"playerCount"] integerValue];
+        rankCountTextField.selectedItem = String(rankCount);
+        
+    } else {
+        rankCountCellHeight = 0;
+    }
+    
     if ([self.list_challengeType.selectedItem isEqualToString:@"%"]) {
         showTiesHeight = 0;
         addFieldHeight = 0;
-        [self.tableView reloadData];
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"WLT"]) {
         showTiesHeight = 50;
         addFieldHeight = 0;
         self.showTiesLabel.text = @"Show Ties";
         [self.showTiesSwitch setOn:(int)[[Global.currentChallenge objectForKey:@"Show_Ties"] intValue] == 1 ? true : false];
-        [self.tableView reloadData];
+
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"Exception"]){
         showTiesHeight = 50;
         addFieldHeight = 50;
         self.showTiesLabel.text = @"Display decimal";
         
         [self.showTiesSwitch setOn:(int)[[Global.currentChallenge objectForKey:@"isDecimal"] intValue] == 1 ? true : false];
-        [self.tableView reloadData];
+
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"# - Lower Better"] || [self.list_challengeType.selectedItem isEqualToString:@"# - Higher Better"]) {
         showTiesHeight = 50;
         addFieldHeight = 0;
         self.showTiesLabel.text = @"Display decimal";
         
         [self.showTiesSwitch setOn:(int)[[Global.currentChallenge objectForKey:@"isDecimal"] intValue] == 1 ? true : false];
-        [self.tableView reloadData];
     }
     
     NSString *description = [Global.currentChallenge objectForKey:@"Challenge_Desc"];
-    NSString *desc1 = [description kv_decodeHTMLCharacterEntities];
-//    NSString *desc2 = [desc1 kv_encodeHTMLCharacterEntities];
-//    NSString *desc3 = [description kv_encodeHTMLCharacterEntities];
-    self.descriptionText.text = [self convertHTML:desc1];
-//    self.descriptionText.text = description;
-
-    self.photoImgView.image = [UIImage imageWithData:[[Global.currentChallenge objectForKey:@"ChallagePic"] base64Data]];
     
-    if (self.photoImgView.image == nil) {
-        int chalngID = (int)[[Global.currentChallenge objectForKey:@"ID"] integerValue];
+    NSString *desc1 = [description kv_decodeHTMLCharacterEntities];
+    self.descriptionText.text = [self convertHTML:desc1];
+    
+    NSString *chanllengeImageString = [Global.currentChallenge objectForKey:@"ChallagePic"];
+    if ([chanllengeImageString length] > 0) {
         
-        NSLog(@"listchallengeid, %d", chalngID);
+        [addPictureButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
         
-        [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
-        NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallengeImage WHERE ChallangeID=%d",chalngID];
-        
-        NSArray *imageDataArr = [SCSQLite selectRowSQL:query];
-        
-        if (imageDataArr.count > 0) {
-            NSString *base64String = [[imageDataArr objectAtIndex:0] valueForKey:@"imgData"];
+        if ([chanllengeImageString containsString:@".png"] || [chanllengeImageString containsString:@".jpeg"] || [chanllengeImageString containsString:@".jpg"]) {
+            int chalngID = (int)[[Global.currentChallenge objectForKey:@"ID"] integerValue];
             
-            NSLog(@"imageTest--%@", base64String);
+            NSLog(@"listchallengeid, %d", chalngID);
             
+            [SCSQLite initWithDatabase:@"sportsdb.sqlite3"];
+            NSString *query = [NSString stringWithFormat:@"SELECT * FROM ChallengeImage WHERE ChallangeID=%d",chalngID];
             
-            if ([base64String isEqualToString:@"No Image"]) {
-                //set default image
+            NSArray *imageDataArr = [SCSQLite selectRowSQL:query];
+            
+            if (imageDataArr.count > 0) {
+                NSString *base64String = [[imageDataArr objectAtIndex:0] valueForKey:@"imgData"];
                 
-                self.photoImgView.image = nil;
-            } else {
-                UIImage *image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@",base64String]];
-                self.photoImgView.image = image;
+                NSLog(@"imageTest--%@", base64String);
+                
+                
+                if ([base64String isEqualToString:@"No Image"]) {
+                    //set default image
+                    
+                    self.photoImgView.image = nil;
+                } else {
+                    UIImage *image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@",base64String]];
+                    self.photoImgView.image = image;
+                }
             }
+        } else {
+            self.photoImgView.image = [UIImage imageWithData:[chanllengeImageString base64Data]];
         }
-
+        
+    } else {
+        
+        [addPictureButton setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
+        
+        //fetch challenge original image
+         
     }
     
-    
-//    self.photoImgView.image = [UIImage imageWithData:[[Global.currentChallenge objectForKey:@"ChallagePic"] base64Data]];
-//
-//    NSLog(@"challengeimagetest, %@---%@", [Global.currentChallenge objectForKey:@"ChallagePic"], [[Global.currentChallenge objectForKey:@"ChallagePic"] base64Data]);
-//
-////    self.photoImgView.image = [UIImage imageNamed:[Global.currentChallenge objectForKey:@"ChallagePic"]];
-//    if (self.photoImgView.image == nil) {
-//        self.photoImgView.image = [UIImage imageNamed:@"default_team_image.jpeg"];
-//    }
-    
-    
-//    NSString *base64String = [Global.currentChallenge objectForKey:@"ChallagePic"];
-//    
-//    if ([base64String isEqualToString:@"No Image"]) {
-//        //set default image
-//        self.photoImgView.image = nil;
-//    } else {
-//        UIImage *image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@",base64String]];
-//        self.photoImgView.image = image;
-//    }
-//
-    
+    [self.tableView reloadData];
 }
 
-
+-(NSAttributedString *)convertToAttributedStringFrom: (NSString *)html {
+    
+    html = [html stringByAppendingString:[NSString stringWithFormat:@"<style>body{font-family: '%@'; font-size:%fpx;}</style>",
+                                              @"",
+                                              17.0]];
+    
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithData:[html dataUsingEncoding:NSUnicodeStringEncoding]
+                                                                                   options:@{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+                                                                                             NSCharacterEncodingDocumentAttribute: @(NSUTF8StringEncoding)}
+                                                                        documentAttributes:nil
+                                                                                     error:nil];
+    return attributedString;
+}
 
 -(NSString *)convertHTML:(NSString *)html {
     
@@ -291,48 +308,38 @@
     
     if ([self.list_challengeCategory.selectedItem  isEqual: @"Fitness"]) {
         fitnessHeight = 50;
-        [self.tableView reloadData];
     } else {
         fitnessHeight = 0;
-        [self.tableView reloadData];
     }
     
     if ([self.list_challengeType.selectedItem isEqualToString:@"%"]) {
         addFieldHeight = 0;
         showTiesHeight = 0;
-        
-        [self.tableView reloadData];
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"WLT"]) {
         addFieldHeight = 0;
         showTiesHeight = 50;
         self.showTiesLabel.text = @"Show Ties";
-        
-        [self.tableView reloadData];
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"Exception"]){
         showTiesHeight = 50;
         addFieldHeight = 50;
         self.showTiesLabel.text = @"Display decimal";
-        [self.tableView reloadData];
     } else if ([self.list_challengeType.selectedItem isEqualToString:@"# - Lower Better"] || [self.list_challengeType.selectedItem isEqualToString:@"# - Higher Better"]) {
         showTiesHeight = 50;
         addFieldHeight = 0;
         self.showTiesLabel.text = @"Display decimal";
-        [self.tableView reloadData];
     }
     
     for (int i = 0; i < Global.currendCategoryArr.count; i++) {
         
-//        [categoryItemList addObject:Global.currendCategoryArr[i][@"CategoryName"]];
         if ([self.list_challengeCategory.selectedItem isEqualToString:Global.currendCategoryArr[i][@"CategoryName"]]) {
             
             challengeSubcategory.Challenge_Category = (int)[Global.currendCategoryArr[i][@"CatID"] integerValue];
-//            (int)[[[chalCatArray objectAtIndex:i]valueForKey:@"CatID"]integerValue];
             NSLog(@"selectedCatId, %d", challengeSubcategory.Challenge_Category);
             
         }
     }
     
-    
+    [self.tableView reloadData];
     
 }
 
@@ -362,6 +369,8 @@
     
     NSLog(@"master teamId, %d", Global.masterTeamId);
     
+    [self.view endEditing:YES];
+    
     if (Global.currntTeam.TeamID == Global.masterTeamId) {
         if (![self checkValidation]) {
             return;
@@ -373,18 +382,14 @@
             return;
         }
         
-        [ProgressHudHelper showLoadingHudWithText:@"Wait Please..."];
+        [SVProgressHUD showWithStatus:@"Wait Please..."];
         
         [self fetchChallengeSubcategories];
         [self createChallengeSubcategories];
         
     } else {
-        [Alert showAlert:@"Forbidden!" message:@"You can't edit Challenge" viewController:self];
+        [Alert showAlert:@"" message:@"You do not have permission.\nCan only be edited from Master Team account." viewController:self];
     }
-    
-    
-    
-    
 }
 
 - (void)recieveCustomDataFromCustomTypeController:(int)isAvg castOrder:(NSString *)rOrder fieldsName:(NSString *)fields rankFormula:(NSString *)rankFormula {
@@ -416,19 +421,6 @@
     challengeSubcategory.Challenge_Text2 = self.txt_challengeText2.text;
     challengeSubcategory.Challenge_Text3 = self.txt_challengeText3.text;
     
-//    if (isSelectedPhoto) {
-//        //        NSString *base64;
-//        base64 = [UIImagePNGRepresentation(self.photoImgView.image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-//        challengeSubcategory.Challenge_Pic = base64;
-//    } else {
-//        
-//        if (self.navigationChallengeStatus == ChallengeListState_Edit) {
-//            challengeSubcategory.Challenge_Pic = [Global.currentChallenge objectForKey:@"ChallagePic"];
-//        } else {
-//            challengeSubcategory.Challenge_Pic = @"";
-//        }
-//    }
-    
     if (self.photoImgView.image == nil) {
         challengeSubcategory.Challenge_Pic = @"";
     } else {
@@ -451,27 +443,14 @@
         challengeSubcategory.Show_Ties = 0;
     }
     
-//    challengeSubcategory.Challenge_Category = (int)self.list_challengeCategory.selectedItem;
-    
-//    if (self.list_challengeCategory.selected) {
-//        
-//        challengeSubcategory.Challenge_Category = (int)[[Global.currentChallenge objectForKey:@"Challenge_Category"] intValue];
-//        
-//    }
-    
     for (int i = 0; i < Global.currendCategoryArr.count; i++) {
         
-        //        [categoryItemList addObject:Global.currendCategoryArr[i][@"CategoryName"]];
         if ([self.list_challengeCategory.selectedItem isEqualToString:Global.currendCategoryArr[i][@"CategoryName"]]) {
             
             challengeSubcategory.Challenge_Category = (int)[Global.currendCategoryArr[i][@"CatID"] integerValue];
-            //            (int)[[[chalCatArray objectAtIndex:i]valueForKey:@"CatID"]integerValue];
             NSLog(@"selectedCatId, %d", challengeSubcategory.Challenge_Category);
-            
         }
     }
-
-    
     
     if ([self.list_challengeCategory.selectedItem  isEqual: @"Fitness"]) {
         challengeSubcategory.standard0 = self.list_FitnessStandard.text == nil ? @"" : self.list_FitnessStandard.text;
@@ -496,19 +475,17 @@
     challengeSubcategory.playersCount = (int)self.list_RankCount.selectedItem;
     challengeSubcategory.Enabled = self.switch_enabledChallenge.isOn == true ? 1 : 0;
     challengeSubcategory.isHome = self.switch_continueAdding.isOn == true ? 1 : 0;
-//    NSString *description = [self.descriptionText.text kv_encodeHTMLCharacterEntities];
-    
-//    NSString *description = [Global.currentChallenge objectForKey:@"Challenge_Desc"];
-//    NSString *desc1 = [description kv_decodeHTMLCharacterEntities];
-//    NSString *desc2 = [desc1 kv_encodeHTMLCharacterEntities];
-//    NSString *desc3 =
-//    NSString *desc4 = [NSString stringWithFormat:@"<p>%@</p>", self.descriptionText.text];
-//    NSString *desc5 = [desc4 kv_encodeHTMLCharacterEntities];
     challengeSubcategory.Challenge_Desc = self.descriptionText.text;
     ;
     challengeSubcategory.topPerformer = self.switch_includeTopPerformerReport.isOn == true ? 1 : 0;
     
+    challengeSubcategory.isHome = displayHomepageSwitch.isOn == true ? 1 : 0;
     
+    NSString *rankCount = @"0";
+    if (challengeSubcategory.isHome == 1) {
+        rankCount = rankCountTextField.selectedItem;
+    }
+    challengeSubcategory.playersCount = (int)[rankCount integerValue];
     
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.Challenge_Menu forKey:@"Challenge_Menu"];
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.Challenge_Text1 forKey:@"Challenge_Text1"];
@@ -524,7 +501,7 @@
     [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.isDecimal) forKey:@"isDecimal"];
     [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.topPerformer) forKey:@"topPerformer"];
     [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.Enabled) forKey:@"Enable"];
-    [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.isAdding) forKey:@"isHome"];
+//    [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.isAdding) forKey:@"isHome"];
     [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.Show_Ties) forKey:@"Show_Ties"];
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.Challenge_Desc forKey:@"Challenge_Desc"];
     
@@ -532,6 +509,8 @@
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.Rorder forKey:@"Rorder"];
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.fields forKey:@"fields"];
     [ChallengeSubcategoryDictionary setValue:challengeSubcategory.RankFormula forKey:@"RankFormula"];
+    [ChallengeSubcategoryDictionary setValue:String(challengeSubcategory.isHome) forKey:@"isHome"];
+    [ChallengeSubcategoryDictionary setValue:rankCount forKey:@"playerCount"];
     
     
     
@@ -601,8 +580,8 @@
                              @"Enabled": String(self.switch_enabledChallenge.isOn == true ? 1 : 0),
                              @"isDecimal": String(challengeSubcategory.isDecimal),
                              @"Challenge_Pic": base64,
-                             @"isHome": String(self.switch_continueAdding.isOn == true ? 1 : 0),
-                             @"PlayerCount": String(0),
+                             @"isHome": String(challengeSubcategory.isHome),
+                             @"playerCount": String(challengeSubcategory.playersCount),
                              @"topPerformer": String(challengeSubcategory.topPerformer),
                              @"standard0": challengeSubcategory.standard0,
                              @"isAvg": String(challengeSubcategory.isAvg),
@@ -614,12 +593,12 @@
                              };
     
     [API executeHTTPRequest:Post url:syncToServerServiceURLManageChallenge parameters:params CompletionHandler:^(NSDictionary *responseDict) {
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [self parseResponse:responseDict params:params];
     } ErrorHandler:^(NSString *errorStr) {
         
         NSLog(@"errorStr ---%@", errorStr);
-        [ProgressHudHelper hideLoadingHud];
+        [SVProgressHUD dismiss];
         [Alert showAlert:@"Something went wrong" message:nil viewController:self];
     }];
     
@@ -684,54 +663,67 @@
     }
 }
 
-
-
-
-//- (IBAction)didTapBack:(id)sender {
-//    [self.navigationController popViewControllerAnimated:true];
-//}
-
 - (IBAction)didTapPhoto:(id)sender {
-    UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
-    UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
+    
+    UIImage *addPictureImage = [UIImage imageNamed:@"ic_camera"];
+    if ([[addPictureButton currentImage] isEqual:addPictureImage]) {
+        UIAlertController *actionSheet = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         
-    }];
-    UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
-        imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-        [imagePickerController setAllowsEditing:YES];
-        imagePickerController.delegate = self;
-        [self presentViewController:imagePickerController animated:YES completion:nil];
+        UIAlertAction *cameraAction = [UIAlertAction actionWithTitle:@"Take Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
+        UIAlertAction *libraryAction = [UIAlertAction actionWithTitle:@"Choose Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            UIImagePickerController* imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            [imagePickerController setAllowsEditing:YES];
+            imagePickerController.delegate = self;
+            [self presentViewController:imagePickerController animated:YES completion:nil];
+            
+        }];
         
-    }];
-    
-    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:@"Delete Photo" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-       
-        _photoImgView.image = nil;
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
         
-    }];
+        [actionSheet addAction:cameraAction];
+        [actionSheet addAction:libraryAction];
+        [actionSheet addAction:cancelAction];
+        
+        [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
+        
+        UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
+        popPresenter.sourceView = (UIButton *)sender;
+        popPresenter.sourceRect = ((UIButton *)sender).bounds;
+        
+        [self presentViewController:actionSheet animated:true completion:nil];
+    } else {
+        [Alert showOKCancelAlert:nil message:@"Are you sure you want to remove challenge picture?" viewController:self complete:^{
+            
+            photoImgView.image = nil;
+            challengeSubcategory.Challenge_Pic = @"";
+            isSelectedPhoto = false;
+            [addPictureButton setImage:[UIImage imageNamed:@"ic_camera"] forState:UIControlStateNormal];
+        } canceled:nil];
+    }
+}
+- (IBAction)handleDisplayHomepage:(id)sender {
     
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil];
     
-    [actionSheet addAction:cameraAction];
-    [actionSheet addAction:libraryAction];
-    [actionSheet addAction:deleteAction];
-    [actionSheet addAction:cancelAction];
+    int displayHomePage = [sender isOn] == YES ? 1 : 0;
     
-    [actionSheet setModalPresentationStyle:UIModalPresentationPopover];
+    if (displayHomePage == 1) {
+        rankCountCellHeight = 50;
+        
+        rankCountTextField.selectedItem = @"3";
+    } else {
+        rankCountCellHeight = 0;
+    }
     
-    UIPopoverPresentationController *popPresenter = [actionSheet popoverPresentationController];
-    popPresenter.sourceView = (UIButton *)sender;
-    popPresenter.sourceRect = ((UIButton *)sender).bounds;
-    
-    [self presentViewController:actionSheet animated:true completion:nil];
-    
+    [self.tableView reloadData];
 }
 
 #pragma mark - Table view data source
@@ -746,6 +738,10 @@
     
     if (indexPath.section == 2 && indexPath.row == 5) {
         return showTiesHeight;
+    }
+    
+    if (indexPath.section == 2 && indexPath.row == 7) {
+        return rankCountCellHeight;
     }
     
     if (indexPath.section == 2 && indexPath.row == 0) {
@@ -765,45 +761,6 @@
             return 0;
         }
     }
-    
-//    if (self.navigationChallengeStatus == ChallengeListState_Add  ) {
-//        
-//        if (indexPath.section == 2 && indexPath.row == 0) {
-//            return fitnessHeight;
-//        }
-//        if (indexPath.section == 1 && indexPath.row == 4) {
-//            return fitnessHeight;
-//        }
-//        
-//        if (indexPath.section == 1 && indexPath.row == 2) {
-//            return addFieldHeight;
-//        }
-//        
-//    } else {
-//        
-//        if (indexPath.section == 2 && indexPath.row == 4) {
-//            return 0;
-//        }
-    
-//        if (self.navigationFitnessStatus != ChallengeFitnessState_IS) {
-//            if (indexPath.section == 2 && indexPath.row == 0) {
-//                return fitnessHeight;
-//            }
-//            if (indexPath.section == 1 && indexPath.row == 4) {
-//                return fitnessHeight;
-//            }
-//        }
-        
-//        if (indexPath.section == 2 && indexPath.row == 0) {
-//            return fitnessHeight;
-//        }
-//        if (indexPath.section == 1 && indexPath.row == 4) {
-//            return fitnessHeight;
-//        }
-
-        
-//    }
-    
     
     return 50;
 }
@@ -837,8 +794,9 @@
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     UIImage *image = [info valueForKey:UIImagePickerControllerEditedImage];
-    _photoImgView.image = image;
+    photoImgView.image = image;
     isSelectedPhoto = true;
+    [addPictureButton setImage:[UIImage imageNamed:@"remove"] forState:UIControlStateNormal];
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 

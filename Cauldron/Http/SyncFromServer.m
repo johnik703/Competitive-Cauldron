@@ -29,7 +29,6 @@
     dispatch_async(queue, ^{
        // Get the JSON string from our web serivce
        NSDictionary * dictionary = [JSONHelper loadJSONDataFromURL:WebServiceURL];
-       NSLog(@"dic %@",WebServiceURL);
        dispatch_async(dispatch_get_main_queue(), ^{
           //This code will run once the JSON-loading section above has completed.
           [self startSyncFromServerWithDataDict:dictionary serviceType:callServiceFor WithTeamID:userTeamID syncCount:cnt playerID:playerID mode:mode];
@@ -40,8 +39,6 @@
 
 -(void)startSyncFromServerWithDataDict:(NSDictionary*)recieveDataDict serviceType:(NSString*)callServiceFor WithTeamID:(int)userTeamID syncCount:(int)cnt playerID:(int)playerID mode:(int)mode
 {
-    
-//    int cnt = (int)Global.arrTeamsId.count;
     
     NSUInteger totalServiceCount = 9.0 * cnt;
     NSMutableDictionary *valuesDictionary = [[NSMutableDictionary alloc] init];
@@ -62,8 +59,6 @@
             } else {
                 [self removeAllDataFromLocalDataBaseBeforeSync];
             }
-            
-//            [self removeAllDataFromLocalDataBaseBeforeSync];
             [self loadDataRecordsWithURL:[NSString stringWithFormat:playerServiceURL,userTeamID, playerID, mode] serviceType:@"playerService" withTeamID:userTeamID syncCount:cnt playerID:playerID mode:mode];
             
             [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
@@ -71,8 +66,6 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
             
             self.SyncStatus = SyncFromServerState_StartService;
-            
-            NSLog(@"startSync1, %d", syncCount);
         }
         else
         {
@@ -99,7 +92,7 @@
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                NSLog(@"startSync2, %d", syncCount);
+                
             }
             
         }
@@ -116,7 +109,7 @@
         }
         NSArray *allTeams = [DataFetcherHelper getAllTeamDataFromDict:recieveDataDict];
         
-        NSLog(@"testsecondrecievechallengeData, %@", recieveDataDict);
+//        NSLog(@"testsecondrecievechallengeData, %@", recieveDataDict);
         
         if([allTeams count] == [recieveDataDict count])
         {
@@ -126,7 +119,7 @@
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                NSLog(@"startSync3, %d", syncCount);
+               
             }
         }
         else
@@ -142,20 +135,16 @@
         }
         NSArray *allChallenges = [DataFetcherHelper getAllChallengeDataFromDict:recieveDataDict];
         
-        NSLog(@"testChallenge, %@", recieveDataDict);
+//        NSLog(@"testChallenge, %@", recieveDataDict);
         
         if([allChallenges count] == [recieveDataDict count])
         {
-             NSLog(@"url2%@",[NSString stringWithFormat:chalngCategoryServiceURL,userTeamID]);
             [self loadDataRecordsWithURL:[NSString stringWithFormat:chalngCategoryServiceURL,userTeamID, playerID, mode] serviceType:@"categoryService" withTeamID:userTeamID syncCount:cnt playerID:playerID mode:mode];
             
             if (self.SyncStatus == SyncFromServerState_ChallengeService) {
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                
-                NSLog(@"startSync4, %d", syncCount);
-
             }
         }
         else
@@ -173,14 +162,13 @@
         //NSLog(@"Details For Category = %@ And Total : %d",allCatagories,allCatagories.count);
         if([allCatagories count] == [recieveDataDict count])
         {
-            NSLog(@"url1%@",[NSString stringWithFormat:chalngStateServiceURL,userTeamID]);
             [self loadDataRecordsWithURL:[NSString stringWithFormat:chalngStateServiceURL,userTeamID, playerID, mode] serviceType:@"chalStateService" withTeamID:userTeamID syncCount:cnt playerID:playerID mode:mode];
             
             if (self.SyncStatus == SyncFromServerState_CategoryService) {
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                NSLog(@"startSync5, %d", syncCount);
+                
             }
         }
         else
@@ -207,7 +195,7 @@
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                NSLog(@"startSync6, %d", syncCount);
+                
             }
         }
         else
@@ -215,15 +203,6 @@
             totalServiceCount = totalServiceCount-1;
         }
     }
-//    else if([callServiceFor isEqualToString:@"journalEntry"])
-//    {
-//        NSArray *allJournal = [DataFetcherHelper getAllJournalDataFromDict:recieveDataDict];
-//        //NSLog(@"Details For States = %@ And Total : %d",allStates,allStates.count);
-//        if([allJournal count] == [recieveDataDict count])
-//        {
-//            [self loadDataRecordsWithURL:[NSString stringWithFormat:rankingEntry,userTeamID] serviceType:@"rankinService" withTeamID:userTeamID];
-//        }
-//    }
 
     else if([callServiceFor isEqualToString:@"journalEntry"])
     {
@@ -241,7 +220,7 @@
                 [valuesDictionary setObject:[NSNumber numberWithInt:syncCount] forKey:PROGRESS_VALUE];
                 [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                 [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                NSLog(@"startSync7, %d", syncCount);
+                
             }
         }
         else
@@ -267,7 +246,7 @@
         {
             
             
-            NSLog(@"Everything is Complete call Process Complete Delegate");
+//            NSLog(@"Everything is Complete call Process Complete Delegate");
             if([delegate respondsToSelector:@selector(syncFromServerProcessCompleted)])
             {
                 completeSyncCount++;
@@ -277,7 +256,7 @@
                     [valuesDictionary setObject:[NSNumber numberWithInt:syncCount + 2 * cnt + 1] forKey:PROGRESS_VALUE];
                     [valuesDictionary setObject:[NSNumber numberWithInteger:totalServiceCount] forKey:TOTAL_VALUE];
                     [[NSNotificationCenter defaultCenter] postNotificationName:KEYVALUE object:self userInfo:valuesDictionary];
-                    NSLog(@"startSync8, %d", syncCount);
+                   
                 }
 
                 if (completeSyncCount == cnt) {
@@ -327,7 +306,7 @@
     
     NSArray *challengeIds = [SCSQLite selectRowSQL:selectQuery];
     
-    NSLog(@"challengesId, %@", challengeIds);
+//    NSLog(@"challengesId, %@", challengeIds);
     
 }
 
@@ -370,7 +349,7 @@
  
     if(success)
     {
-        NSLog( @"Succsefully Deleted Table : %@",dbTableName);
+//        NSLog( @"Succsefully Deleted Table : %@",dbTableName);
     }
 }
 

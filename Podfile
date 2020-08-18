@@ -4,8 +4,9 @@
 target 'Cauldron' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
   use_frameworks!
+
   pod 'BEMCheckBox'
-  pod 'IQKeyboardManager'
+  pod 'IQKeyboardManagerSwift', '6.0.4'
   pod 'AFNetworking', '~> 3.0'
   pod 'LGSideMenuController'
   pod 'SkyFloatingLabelTextField', '~> 2.0.0'
@@ -14,6 +15,13 @@ target 'Cauldron' do
   pod 'MZAppearance'
   pod 'MGSwipeTableCell'
   pod 'MZFormSheetPresentationController'
+  pod 'SVProgressHUD'
+  pod 'Toast-Swift'
+  pod 'LetterAvatarKit'
+  pod 'HMSegmentedControl'
+  pod 'Toast', '~> 4.0.0'
+  pod 'Charts'
+  
   # Pods for Cauldron
 
   target 'CauldronTests' do
@@ -25,7 +33,7 @@ end
 post_install do |installer|
     installer.pods_project.targets.each do |target|
         target.build_configurations.each do |config|
-            config.build_settings['SWIFT_VERSION'] = '3.0'
+            config.build_settings['SWIFT_VERSION'] = '4.0'
         end
     end
 end
